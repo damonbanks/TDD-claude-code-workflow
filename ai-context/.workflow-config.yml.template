@@ -1,0 +1,92 @@
+# TDD Workflow Configuration (Optional)
+#
+# Copy this file to `.workflow-config.yml` in the same directory to override
+# auto-detection. Everything auto-detects without this file — only use it
+# if you need explicit control over a specific setting.
+#
+# Uncomment and fill in only the sections you want to override.
+
+# -------------------------------------------------------------------
+# Ticket System
+# -------------------------------------------------------------------
+# ticket:
+#   # Regex pattern to match ticket IDs (default: auto-detect from branch)
+#   pattern: "[A-Z]+-\\d+"
+#
+#   # Whether tickets are required for all work (default: false)
+#   required: false
+#
+#   # Example formats to show users
+#   examples:
+#     - "PROJ-123"
+#     - "#42"
+
+# -------------------------------------------------------------------
+# Test Commands
+# -------------------------------------------------------------------
+# test:
+#   # Command to run all tests
+#   command: "make test"
+#
+#   # Command to run a specific test file (use {file} placeholder)
+#   single_file: "go test -v {file}"
+#
+#   # Command to run tests with coverage
+#   coverage: "make test-coverage"
+
+# -------------------------------------------------------------------
+# Lint / Format Commands
+# -------------------------------------------------------------------
+# lint:
+#   # Command to run linter
+#   command: "make lint"
+#
+#   # Command to auto-fix lint issues
+#   fix: "make lint-fix"
+#
+# format:
+#   # Command to check formatting
+#   check: "make format-check"
+#
+#   # Command to auto-format
+#   fix: "make format"
+
+# -------------------------------------------------------------------
+# Build Commands
+# -------------------------------------------------------------------
+# build:
+#   # Command to build the project
+#   command: "make build"
+#
+#   # Command for code generation (protobuf, GraphQL, etc.)
+#   generate: "make generate"
+
+# -------------------------------------------------------------------
+# Commit Convention
+# -------------------------------------------------------------------
+# commits:
+#   # Style: "conventional", "ticket-prefix", "simple", or "custom"
+#   style: "conventional"
+#
+#   # Custom format template (only used when style is "custom")
+#   # Available placeholders: {type}, {scope}, {ticket}, {description}
+#   template: "{type}({scope}): {ticket} {description}"
+#
+#   # Valid commit types
+#   types:
+#     - feat
+#     - fix
+#     - docs
+#     - test
+#     - refactor
+#     - chore
+
+# -------------------------------------------------------------------
+# Git Platform
+# -------------------------------------------------------------------
+# git:
+#   # Platform: "github", "gitlab", "bitbucket", "azure", or "other"
+#   platform: "github"
+#
+#   # CLI tool for PR/MR creation (leave empty to use web interface)
+#   cli: "gh"

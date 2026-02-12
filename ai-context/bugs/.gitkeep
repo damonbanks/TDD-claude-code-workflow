@@ -1,0 +1,11 @@
+# Bug fix documentation directory
+#
+# Bug fixes are tracked here with the format:
+# YYYY-MM-DD_TICKET-ID_bug-name_analysis.md
+#
+# Each bug fix document should include:
+# - Bug description and symptoms
+# - Root cause analysis
+# - Reproduction steps and test
+# - Fix implementation
+# - Verification results
