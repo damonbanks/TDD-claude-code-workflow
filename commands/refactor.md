@@ -12,7 +12,7 @@ The refactoring process uses plan mode for strategic planning:
 2. Analyze implementation holistically across all files
 3. Identify cross-cutting concerns and systemic improvements
 4. Create coherent refactoring strategy with logical groupings
-5. **Exit Plan Mode** to get user approval on strategy
+5. **Present for approval** using AskUserQuestion (NOT ExitPlanMode) to get user approval on strategy
 6. Execute refactorings in implementation mode
 
 **Rationale:**
@@ -20,6 +20,11 @@ The refactoring process uses plan mode for strategic planning:
 - System-wide view prevents missing important patterns
 - Coherent plan makes changes easier to review
 - User approval before making changes
+
+**Why AskUserQuestion instead of ExitPlanMode:**
+- ExitPlanMode presents Claude Code's default options including "Clear context and implement plan"
+- If the user selects that option, the orchestrator loses conversation state and cannot route to the next phase
+- AskUserQuestion preserves context so the workflow can continue seamlessly
 
 ## Project Context
 
@@ -185,17 +190,31 @@ Prioritize refactorings by:
 11. Add memoization/caching for expensive computations (if applicable)
 ```
 
-#### Step 5: Exit Plan Mode
+#### Step 5: Present Strategy for Approval (Using AskUserQuestion, NOT ExitPlanMode)
 
-Use ExitPlanMode to present your refactoring strategy for approval:
-- Show systemic issues identified
-- Present coherent refactoring themes
-- Explain the order and rationale
-- Get user approval before making changes
+**Do NOT use ExitPlanMode** — it presents default options including "Clear context and implement plan" which breaks the orchestrator's ability to continue the workflow.
 
-**Rationale for Plan Mode:**
-- Refactoring should be strategic, not ad-hoc
-- User should approve the approach before changes
+Instead, present a summary of the refactoring strategy to the user, then use **AskUserQuestion** to get approval:
+
+**Summary to present:**
+- Systemic issues identified
+- Coherent refactoring themes
+- Explanation of the order and rationale
+
+**Then use AskUserQuestion:**
+- **Question**: "Does this refactoring strategy look good?"
+- **Options**:
+  1. "Yes, proceed to execution (Recommended)" — Continue to Phase 4 (Execute Refactoring)
+  2. "No, I have changes" — Collect feedback and revise the strategy
+  3. "Let me review the saved strategy" — Point to the file location and wait
+
+**If approved (option 1):** Proceed directly to Phase 4 (Execute Refactoring Plan).
+**If feedback (option 2):** Incorporate changes and ask again.
+**If reviewing (option 3):** Provide the file path and wait for the user to respond.
+
+**Rationale:**
+- Preserves conversation context so the orchestrator can route to the next phase
+- User still gets an approval gate before any code changes
 - Systemic view prevents missing cross-cutting improvements
 - Coherent plan makes review easier
 

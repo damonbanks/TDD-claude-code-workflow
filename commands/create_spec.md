@@ -12,13 +12,18 @@ When this command is invoked:
 2. Explore the codebase to understand existing patterns
 3. Gather requirements through clarifying questions
 4. Draft the specification
-5. **Exit Plan Mode** using ExitPlanMode to get user approval before proceeding
+5. **Present for approval** using AskUserQuestion (NOT ExitPlanMode) to get user approval before proceeding
 
 **Rationale for Plan Mode:**
 - Specification is about planning, not implementation
 - User should approve the spec before moving to tests
 - Prevents premature commitment to approach
 - Allows for course correction before investing in tests/code
+
+**Why AskUserQuestion instead of ExitPlanMode:**
+- ExitPlanMode presents Claude Code's default options including "Clear context and implement plan"
+- If the user selects that option, the orchestrator loses conversation state and cannot route to the next TDD phase
+- AskUserQuestion preserves context so phase transitions work correctly
 
 ## Project Context
 
@@ -339,29 +344,32 @@ AI: [Asks clarifying questions...]
 AI: [Generates specification in Phase 2]
 ```
 
-## Exiting Plan Mode and Saving the Specification
+## Presenting the Specification for Approval
 
-**CRITICAL: After creating the specification in plan mode, you must exit plan mode to get user approval.**
+**CRITICAL: After creating the specification in plan mode, you must present it for user approval using AskUserQuestion (NOT ExitPlanMode).**
 
-### Step 1: Write the Specification to Plan File
+### Step 1: Write the Specification File
 
-While in plan mode, write your specification to the designated plan file:
+While in plan mode, write your specification to the designated file:
 - Use Write tool to create: `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
 - Filename format: `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
 - Example: `ai-context/specs/2025-01-15_PROJ-123_entity-management_spec.md`
 
-### Step 2: Exit Plan Mode
+### Step 2: Present Specification for Approval (Using AskUserQuestion, NOT ExitPlanMode)
 
-Use the ExitPlanMode tool to:
-- Present the specification to the user
-- Request user approval
-- Allow user to review before proceeding
+**Do NOT use ExitPlanMode** — it presents default options including "Clear context and implement plan" which breaks the orchestrator's ability to route to the next TDD phase.
 
-**The ExitPlanMode tool will:**
-- Show the user your complete specification
-- Ask for their approval
-- If approved, proceed to implementation (in this case, just saving)
-- If not approved, allow for revisions
+Instead, present a summary of the specification to the user, then use **AskUserQuestion** to get approval:
+
+- **Question**: "Does this specification look correct?"
+- **Options**:
+  1. "Yes, proceed to test generation (Recommended)" — Route to Phase 2
+  2. "No, I have feedback" — Collect revision notes and update the spec
+  3. "Let me review the saved file first" — Point to the file path and wait
+
+**If approved (option 1):** Continue directly to Step 3 (commit) and then Step 5 (auto-advance to tests).
+**If feedback (option 2):** Incorporate changes, update the spec file, and ask again.
+**If reviewing (option 3):** Provide the file path and wait for the user to respond.
 
 ### Step 3: After Approval - Commit the Specification
 

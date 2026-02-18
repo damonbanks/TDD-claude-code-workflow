@@ -148,7 +148,7 @@ This workflow uses two distinct modes:
 - WebFetch - research documentation
 - AskUserQuestion - clarify requirements
 - Write (for plan/spec files only) - document findings
-- ExitPlanMode - request approval to proceed
+- AskUserQuestion - request approval to proceed (use this instead of ExitPlanMode to preserve orchestrator context)
 
 ### Implementation Mode (Execution)
 **Used in:**
