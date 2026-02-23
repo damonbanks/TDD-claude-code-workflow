@@ -5,21 +5,21 @@ Write code to make the failing tests pass, following the research plan and TDD p
 
 ## Project Context
 
-**Before starting, read `ai-context/current-work.md` for cached project discovery results.**
+**Before starting, read `ai-context/project-context.md` for cached project discovery results.**
 
-The `## Project Context` section contains the test command, lint command, build command, and other tooling discovered by `/start_work`. Use these values for:
+This file contains the test command, lint command, build command, and other tooling discovered by `/start_work`. Use these values for:
 - Running tests (use the cached test command, not a guess)
 - Running linters and formatters after changes
 - Running code generation commands
 - Formatting commit messages
 
-**If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+**If `project-context.md` doesn't exist**, run the discovery protocol from `commands/_project_discovery.md` and create it.
 
 ## Workflow Boundaries
 
 **Full reference: `commands/_boundaries.md`**
 
-- **ALWAYS**: Read `current-work.md` for project context; run tests after each implementation step
+- **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; run tests after each implementation step
 - **ALWAYS**: Verify not on main branch before writing code; follow research plan's implementation order
 - **ASK**: If implementation requires deviating from the spec, flag for user approval
 - **ASK**: If new dependencies are needed, get user approval before adding

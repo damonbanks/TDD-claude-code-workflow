@@ -10,6 +10,18 @@ Every project is different: different languages, ticket systems, git platforms, 
 
 ---
 
+## 0. Check for Cached Project Context
+
+Before running full discovery, check if cached results already exist:
+
+1. **Check if `ai-context/project-context.md` exists**
+2. **If it exists**: Read the cached values and use them — skip sections 1–7 below
+3. **If it does not exist**: Proceed with full discovery (sections 1–7) and write the results to `ai-context/project-context.md`
+
+This avoids redundant rediscovery when the project's tooling hasn't changed.
+
+---
+
 ## 1. Ticket Detection
 
 ### Auto-Detect from Branch Name
@@ -246,10 +258,13 @@ Auto-detection works without this file. The config is for projects that want exp
 
 ### `/start_work` (the entry point)
 
-`/start_work` runs this full discovery protocol and writes the results to `ai-context/current-work.md` under a `## Project Context` section:
+`/start_work` runs this discovery protocol and writes the results to `ai-context/project-context.md`:
 
 ```markdown
-## Project Context
+# Project Context
+
+**Discovered**: [YYYY-MM-DD]
+
 - **Language(s)**: [e.g., Go 1.22, TypeScript 5.3]
 - **Key frameworks**: [e.g., React 18.2, Next.js 14.1, or "none"]
 - **Test framework**: [e.g., go test + testify, Jest, pytest]
@@ -267,8 +282,8 @@ Auto-detection works without this file. The config is for projects that want exp
 
 Every other command (`/create_spec`, `/generate_tests`, `/research_implementation`, `/implement`, `/refactor`, `/finish_work`) should:
 
-1. **Read `ai-context/current-work.md`** at the start and use the cached `## Project Context` values
-2. **If no Project Context exists** (e.g., user ran the command directly without `/start_work`), run this discovery protocol and cache the results
+1. **Read `ai-context/project-context.md`** at the start and use the cached project context values
+2. **If `project-context.md` doesn't exist** (e.g., user ran the command directly without `/start_work`), run this discovery protocol and create it
 3. **Use discovered values** for:
    - Test commands (don't hardcode `go test` or `npm test`)
    - Lint/format commands (don't hardcode specific tools)

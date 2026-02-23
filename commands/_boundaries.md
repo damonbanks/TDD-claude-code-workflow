@@ -11,7 +11,8 @@ These actions are safe and expected. Perform them without asking.
 - **Run tests** before commits — use the project's cached test command
 - **Run linters and formatters** after code changes
 - **Check branch** — verify not on main before writing code
-- **Read `current-work.md`** — load cached project context at phase start
+- **Read `project-context.md`** — load cached project context at phase start
+- **Read `current-work.md`** — load current work state at phase start
 - **Save artifacts** — write spec, test plan, research, implementation, and refactoring docs to `ai-context/`
 - **Follow discovered patterns** — use the project's conventions for naming, structure, and style
 - **Use the project's actual commands** — test, lint, build, and generate commands from Project Context

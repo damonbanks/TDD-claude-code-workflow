@@ -14,7 +14,7 @@ Determine the type of work to be done (new feature, bug fix, or resume existing 
 **Full reference: `commands/_boundaries.md`**
 
 - **ALWAYS**: Check current branch before starting; read `current-work.md` if it exists
-- **ALWAYS**: Run project discovery and cache results; save work state to `current-work.md`
+- **ALWAYS**: Run project discovery and cache results to `project-context.md`; save work state to `current-work.md`
 - **ASK**: Confirm branch creation with user; ask for ticket ID if not auto-detected
 - **ASK**: Confirm work type selection before routing to workflow
 - **NEVER**: Write code on main branch — create a feature branch first
@@ -148,9 +148,19 @@ You can always add a ticket reference later.
 
 ### Step 3: Run Project Discovery
 
-**Before routing to any workflow, discover the project's tooling and conventions.**
+**Before routing to any workflow, ensure project context is available.**
 
-Follow the protocol defined in `commands/_project_discovery.md`:
+**If `ai-context/project-context.md` exists:**
+
+Display the cached summary and ask:
+- Question: "Project context was discovered previously. Is this still accurate?"
+- Options:
+  1. "Yes, use cached context (Recommended)" — Skip rediscovery, proceed
+  2. "No, re-run discovery" — Run full discovery and overwrite `project-context.md`
+
+**If `ai-context/project-context.md` does not exist:**
+
+Run full discovery following `commands/_project_discovery.md`:
 
 1. **Language**: Check for manifest files (`go.mod`, `package.json`, `Cargo.toml`, `pyproject.toml`, etc.)
 2. **Test framework & conventions**: Find existing test files, read 2-3 to understand framework, naming, and patterns
@@ -159,10 +169,13 @@ Follow the protocol defined in `commands/_project_discovery.md`:
 5. **Build/test/lint commands**: Check `Makefile`, `package.json` scripts, CI config, `README.md`, `AGENTS.md`
 6. **Optional config override**: If `ai-context/.workflow-config.yml` exists, read it and use its values
 
-**Cache results in `current-work.md`** under a `## Project Context` section so subsequent phases don't re-discover:
+**Cache results in `ai-context/project-context.md`** so subsequent phases and features don't re-discover:
 
 ```markdown
-## Project Context
+# Project Context
+
+**Discovered**: [YYYY-MM-DD]
+
 - **Language(s)**: [e.g., Go 1.22, TypeScript 5.3]
 - **Key frameworks**: [e.g., React 18.2, Next.js 14.1, or "none"]
 - **Test framework**: [e.g., go test + testify, Jest, pytest]
@@ -663,19 +676,6 @@ ai-context/current-work.md
 **Started**: YYYY-MM-DD
 **Current Phase**: Spec | Test | Research | Implement | Refactor
 
-## Project Context
-- **Language(s)**: [discovered languages with versions, e.g., Go 1.22, TypeScript 5.3]
-- **Key frameworks**: [discovered frameworks with versions, e.g., React 18.2, or "none"]
-- **Test framework**: [discovered framework]
-- **Test command**: [discovered command]
-- **Lint command**: [discovered command or "none"]
-- **Format command**: [discovered command or "none"]
-- **Build command**: [discovered command or "none"]
-- **Code generation**: [discovered command or "none"]
-- **Git platform**: [GitHub | GitLab | Bitbucket | other]
-- **PR/MR command**: [gh pr create | glab mr create | manual]
-- **Commit convention**: [discovered pattern]
-
 ## Artifacts
 - Spec: ai-context/specs/[date]_[ticket]_[feature]_spec.md
 - Tests: ai-context/tests/[date]_[ticket]_[feature]_tests.md
@@ -780,7 +780,8 @@ The existing commands remain unchanged:
 
 ```
 ai-context/
-├── current-work.md                    # NEW: Tracks current work state
+├── project-context.md                 # Cached project discovery (persists across features)
+├── current-work.md                    # Tracks current work state
 ├── specs/
 │   └── YYYY-MM-DD_TICKET-ID_feature-name_spec.md
 ├── tests/

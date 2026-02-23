@@ -26,17 +26,17 @@ When this command is invoked:
 
 ## Project Context
 
-**Before starting, read `ai-context/current-work.md` for cached project discovery results.**
+**Before starting, read `ai-context/project-context.md` for cached project discovery results.**
 
-The `## Project Context` section contains the language, test framework, build/test/lint commands, git platform, and commit convention discovered by `/start_work`. Use these throughout this phase instead of guessing or re-discovering.
+This file contains the language, test framework, build/test/lint commands, git platform, and commit convention discovered by `/start_work`. Use these throughout this phase instead of guessing or re-discovering.
 
-**If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+**If `project-context.md` doesn't exist**, run the discovery protocol from `commands/_project_discovery.md` and create it.
 
 ## Workflow Boundaries
 
 **Full reference: `commands/_boundaries.md`**
 
-- **ALWAYS**: Read `current-work.md` for project context; save spec to `ai-context/specs/`; follow discovered patterns
+- **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; save spec to `ai-context/specs/`; follow discovered patterns
 - **ALWAYS**: Enter Plan Mode before exploring; commit spec after approval
 - **ASK**: User must approve specification before proceeding to test phase
 - **ASK**: If requirements are ambiguous, ask clarifying questions — don't assume

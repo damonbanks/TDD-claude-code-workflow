@@ -311,7 +311,7 @@ The workflow uses a three-tier boundary system (defined in `commands/_boundaries
 
 ### ALWAYS (No Approval Needed)
 - Run tests before commits; run linters after changes
-- Check branch (verify not on main); read `current-work.md`
+- Check branch (verify not on main); read `project-context.md` and `current-work.md`
 - Save artifacts to `ai-context/`; follow discovered patterns
 - Use the project's actual commands; commit at phase boundaries
 
@@ -441,6 +441,7 @@ AI: [Reads ai-context/current-work.md]
 
 ```
 ai-context/
+├── project-context.md                 # Cached project discovery (persists across features)
 ├── current-work.md                    # Tracks current work state and progress
 ├── current-work.md.template           # Template for new work
 ├── specs/
@@ -496,6 +497,7 @@ Artifacts live on **feature branches** and are cleaned up after merge:
 **What's protected (never deleted by `/finish_work`):**
 - `ai-context/WORKFLOW_GUIDE.md`
 - `ai-context/README.md`
+- `ai-context/project-context.md`
 - `ai-context/current-work.md.template`
 - `ai-context/bugs/.gitkeep`
 
@@ -597,7 +599,7 @@ Check your project's CI config (`.github/workflows/`, `.gitlab-ci.yml`, etc.) fo
 
 | Command | Phase | Purpose | Context | Output |
 |---------|-------|---------|---------|--------|
-| `/start_work` | 0 | Determine work type and route to workflow | 10-15% | Guidance + `current-work.md` |
+| `/start_work` | 0 | Determine work type and route to workflow | 10-15% | Guidance + `project-context.md` + `current-work.md` |
 | `/create_spec` | 1 | Generate specification | 30-35% | `specs/[date]_[ticket]_[feature]_spec.md` |
 | `/generate_tests` | 2 | Create failing tests | 40-45% | Test files + `tests/[date]_[ticket]_[feature]_tests.md` |
 | `/research_implementation` | 3 | Analyze implementation needs | 55-60% | `research/[date]_[ticket]_[feature]_research.md` |
