@@ -14,6 +14,19 @@ The `## Project Context` section contains the language, test framework, test com
 
 **If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
 
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Read `current-work.md` for project context; discover test patterns from existing tests
+- **ALWAYS**: Verify not on main branch before creating test files; commit tests after verification
+- **ASK**: Clarify test scope and approach with user (unit, integration, mocks)
+- **ASK**: If a spec requirement cannot be tested, flag it for user decision
+- **NEVER**: Write implementation code — only test code in this phase
+- **NEVER**: Auto-invoke `/research_implementation` via Skill tool — context isolation requires `/clear` first
+- **NEVER**: Modify existing tests that aren't part of this feature
+- **NEVER**: Exceed 50% context budget in this phase
+
 ## Context Budget
 - Start: ~25-30% (spec file reference)
 - End: ~40-45% (spec + generated tests)
@@ -55,6 +68,7 @@ Proceeding with test generation...
 
 ### Phase 1: Analyze Specification
 1. Read the specification file provided via `@ai-context/specs/[date]_[ticket]_[feature]_spec.md`
+   - If the spec has a `## Spec Summary` section, read the summary first, then selectively load only the sections relevant to test generation
 2. Identify all functional requirements, edge cases, and error scenarios
 3. Determine which layer(s) need tests:
    - **Backend**: Service handlers, database queries, business logic
@@ -111,6 +125,31 @@ Test categories to cover:
 - **Edge cases**: Boundary conditions and unusual scenarios
 - **Error handling**: Invalid input, missing data, permission errors
 
+#### Step 3b: Populate Requirements Traceability
+
+After writing tests, map each test back to its specification requirement:
+
+1. **Assign test IDs** using the pattern `T-[REQ-ID]-[seq]`:
+   - `T-REQ-1-01`, `T-REQ-1-02` — tests for REQ-1
+   - `T-EDGE-1-01` — test for EDGE-1
+   - `T-ERR-1-01` — test for ERR-1
+
+2. **Add requirement reference comments** to each test function:
+   ```
+   // Test ID: T-REQ-1-01 | Requirement: REQ-1
+   // Test ID: T-EDGE-2-01 | Requirement: EDGE-2
+   ```
+   Use the comment syntax appropriate for the project's language.
+
+3. **Update the spec file's traceability table**:
+   - Fill in the "Test ID(s)" column with the assigned test IDs
+   - Set status from "Pending" to "Tested" for each covered requirement
+   - Example: `| REQ-1 | Create entity via API | T-REQ-1-01, T-REQ-1-02 | Tested |`
+
+4. **Flag requirements with no test coverage**:
+   - If any requirement has no corresponding test, note it in the test plan
+   - Ask the user whether the gap is intentional or needs additional tests
+
 #### Step 4: Verify Database Tests (if applicable)
 If the feature involves database operations, discover test patterns for data access:
 - Find existing database/repository test files in the codebase
@@ -138,6 +177,16 @@ Create a test plan document in `ai-context/tests/[date]_[ticket]_[feature]_tests
 ### Integration Tests (if applicable)
 - [ ] Integration flow 1
 - [ ] Integration flow 2
+
+## Traceability Matrix
+
+| Requirement ID | Test ID(s) | Test File | Status |
+|---|---|---|---|
+| REQ-1 | T-REQ-1-01, T-REQ-1-02 | [path/to/test_file] | Tested |
+| EDGE-1 | T-EDGE-1-01 | [path/to/test_file] | Tested |
+| ERR-1 | T-ERR-1-01 | [path/to/test_file] | Tested |
+
+**Uncovered requirements**: [list any requirements without tests, or "None"]
 
 ## Test Files Created
 - [List actual test files created, discovering locations from existing test patterns in the repo]
@@ -182,11 +231,9 @@ All tests should FAIL because implementation doesn't exist yet.
 
 ---
 
-## Intelligent Auto-Advance to Next Phase
+## Phase Complete
 
-**After tests are created and verified as failing, suggest the next step.**
-
-Present this to the user:
+After tests are created, verified as failing, committed, and test plan documented, present:
 
 ```
 ✅ Tests Generated Successfully!
@@ -197,59 +244,13 @@ Test files created:
 Test plan saved to:
   ai-context/tests/[date]_[ticket]_[feature]_tests.md
 
-Status: All tests failing ✓ (RED state - this is correct for TDD)
+Status: All tests failing ✓ (RED state — this is correct for TDD)
 
-─────────────────────────────────────────────────
-Next Step: Research Implementation (Phase 3)
-─────────────────────────────────────────────────
+CONTEXT ISOLATION — run /clear before continuing.
+The researcher must not carry the test writer's analysis.
 
-The next phase is to research the codebase and plan how to make these
-tests pass. This involves discovering patterns and creating an implementation plan.
-
-Command:
+Next command (after /clear):
   /research_implementation @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-Would you like me to proceed to the research phase?
-  → Yes - I'll run the command automatically
-  → No - I'll stop here, you can run it manually later
-  → Skip - Skip research and go directly to implementation (not recommended)
 ```
 
-**Use AskUserQuestion:**
-- Question: "Proceed to research implementation phase?"
-- Options:
-  1. "Yes, research implementation now (Recommended)" - Auto-run `/research_implementation`
-  2. "No, I'll run it manually later" - Stop and provide command
-  3. "Skip to implementation (not recommended)" - Jump to `/implement`
-
-**If user selects "Yes":**
-```
-Great! Starting implementation research...
-
-Running: /research_implementation @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-```
-Then invoke the Skill tool with:
-- skill: "research_implementation"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md"
-
-**If user selects "No":**
-```
-No problem! When you're ready, run:
-
-  /research_implementation @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-I'll be here when you need me.
-```
-
-**If user selects "Skip":**
-```
-⚠️  Skipping research is not recommended.
-
-Research helps you understand existing patterns and plan the implementation order.
-
-However, if you want to proceed directly to implementation:
-
-  /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass
-
-Note: Implementation may be less organized without research.
-```
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for implementation research.

@@ -15,6 +15,19 @@ The `## Project Context` section contains the test command, lint command, build 
 
 **If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
 
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Read `current-work.md` for project context; run tests after each implementation step
+- **ALWAYS**: Verify not on main branch before writing code; follow research plan's implementation order
+- **ASK**: If implementation requires deviating from the spec, flag for user approval
+- **ASK**: If new dependencies are needed, get user approval before adding
+- **ASK**: If a test seems incorrect, flag it — don't modify tests to make them pass
+- **NEVER**: Modify tests to make them pass — adjust implementation, not tests
+- **NEVER**: Auto-invoke `/refactor` via Skill tool — context isolation requires `/clear` first
+- **NEVER**: Exceed 65% context budget in this phase
+
 ## Context Budget
 - Start: ~30-35% (research + test references)
 - End: ~50-60% (research + tests + implementation)
@@ -60,6 +73,7 @@ Proceeding with implementation...
 ### Phase 1: Load Implementation Plan
 1. Reference research: `@ai-context/research/[date]_[ticket]_[feature]_research.md`
 2. Reference spec: `@ai-context/specs/[date]_[ticket]_[feature]_spec.md`
+   - If the spec has a `## Spec Summary` section, read the summary first, then selectively load only the sections relevant to implementation
 3. Review test files to understand what needs to pass
 4. Verify tests are currently failing: Run the project's test command (discovered from Makefile, package.json, CI config, or README)
 
@@ -102,6 +116,50 @@ If tests still fail:
 3. Adjust implementation (NOT tests)
 4. Re-run tests
 5. Repeat until GREEN
+
+### Phase 4b: Verify Requirement Coverage
+
+After all tests pass, cross-check the traceability matrix to ensure complete coverage:
+
+1. **Read the spec's `## Requirements Traceability` table** (or the test plan's `## Traceability Matrix`)
+2. **Verify every row has a passing test** — each requirement should map to at least one green test
+3. **Update the spec traceability table**: Change status from "Tested" to "Verified" for each requirement whose tests pass
+4. **Report unverified requirements** to the user:
+   - Requirements still at "Pending" or "Tested" status
+   - Requirements marked "N/A" (confirm with user)
+   - Any gaps between spec and passing tests
+
+### Phase 4c: Spec Conformance Self-Check
+
+After verifying requirement coverage, perform a conformance check against the full specification:
+
+1. **Re-read the specification** — load the spec file (or summary + relevant sections)
+2. **Walk through each acceptance criterion** in every REQ, EDGE, and ERR:
+   - Does the implementation satisfy the criterion?
+   - Is the behavior testable and verified?
+3. **Check non-functional requirements**:
+   - Performance: Does the implementation meet response time and throughput goals?
+   - Security: Are authentication, authorization, and input validation in place?
+   - Error handling: Do error responses match the spec's expected format?
+4. **Check API contracts and data models**:
+   - Do endpoints match the spec's method, route, request, and response definitions?
+   - Do data models match the spec's schema definitions?
+5. **Output a conformance summary**:
+   ```
+   ## Spec Conformance Summary
+   | Requirement | Status | Notes |
+   |---|---|---|
+   | REQ-1 | PASS | All acceptance criteria met |
+   | REQ-2 | PASS | |
+   | EDGE-1 | DEVIATION | [describe deviation] |
+   | ERR-1 | PASS | |
+   | Performance | PASS | Response time under target |
+   | Security | PASS | Auth checks in place |
+   ```
+6. **Flag deviations and ask the user** about any gaps:
+   - Deviations that were necessary (explain why)
+   - Ambiguous requirements that need clarification
+   - Requirements that were impossible to verify automatically
 
 ### Phase 5: Document Implementation
 Create implementation log in `ai-context/implementation/[date]_[ticket]_[feature]_implementation.md`:
@@ -169,11 +227,13 @@ Create implementation log in `ai-context/implementation/[date]_[ticket]_[feature
 - ✅ Error cases handled correctly
 - ✅ Edge cases handled correctly
 
-## Intelligent Auto-Advance to Next Phase
+## Next Phase
+After implementation is complete and all tests pass, proceed to refactoring.
+```
 
-**After implementation is complete and all tests pass, suggest the next step.**
+### Phase 6: Phase Complete
 
-Present this to the user:
+After implementation is complete, all tests pass, the implementation document is saved, and changes are committed, present:
 
 ```
 ✅ Implementation Complete!
@@ -186,64 +246,11 @@ Status:
   ✅ Feature implemented
   ✅ Code committed
 
-─────────────────────────────────────────────────
-Next Step: Refactor (Phase 5)
-─────────────────────────────────────────────────
+CONTEXT ISOLATION — run /clear before continuing.
+The refactorer should assess code quality with fresh eyes.
 
-The next phase is to optimize, document, and clean up the implementation
-while keeping tests green. This is the TDD REFACTOR phase.
-
-The refactor phase will:
-  1. Enter plan mode to assess system holistically
-  2. Identify cross-cutting improvements
-  3. Create refactoring strategy
-  4. Get your approval
-  5. Execute refactorings in logical groups
-
-Command:
+Next command (after /clear):
   /refactor @ai-context/implementation/[date]_[ticket]_[feature]_implementation.md
-
-Would you like me to proceed to refactoring?
-  → Yes - I'll run the command automatically
-  → No - I'll stop here, you can run it manually later
-  → Skip - Feature is done, create PR now
 ```
 
-**Use AskUserQuestion:**
-- Question: "Proceed to refactoring phase?"
-- Options:
-  1. "Yes, refactor now (Recommended)" - Auto-run `/refactor`
-  2. "No, I'll run it manually later" - Stop and provide command
-  3. "Skip, feature is complete" - Suggest creating PR
-
-**If user selects "Yes":**
-```
-Great! Starting refactoring phase...
-
-Running: /refactor @ai-context/implementation/[date]_[ticket]_[feature]_implementation.md
-```
-Then invoke the Skill tool with:
-- skill: "refactor"
-- args: "@ai-context/implementation/[date]_[ticket]_[feature]_implementation.md"
-
-**If user selects "No":**
-```
-No problem! When you're ready, run:
-
-  /refactor @ai-context/implementation/[date]_[ticket]_[feature]_implementation.md
-
-I'll be here when you need me.
-```
-
-**If user selects "Skip":**
-```
-✅ Feature complete! Ready to create a pull request.
-
-Create a PR/MR using your git platform:
-  - GitHub: gh pr create --title "[title following project conventions]"
-  - GitLab: glab mr create --title "[title]"
-  - Other: Create via your platform's web interface
-
-Note: Skipping refactoring means the code works but may not be optimized.
-Consider refactoring before merging for better code quality.
-```
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for refactoring.

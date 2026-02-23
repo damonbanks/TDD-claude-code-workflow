@@ -30,6 +30,18 @@ The `## Project Context` section contains the language, test/build/lint commands
 
 **If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
 
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Read `current-work.md` for project context; discover patterns from existing code
+- **ALWAYS**: Save research document to `ai-context/research/`; follow discovered conventions
+- **ASK**: If research reveals the spec needs changes, flag for user decision — don't modify the spec
+- **ASK**: If new dependencies are needed, document them and note they require approval during implementation
+- **NEVER**: Write implementation code — this phase is research only
+- **NEVER**: Auto-invoke `/implement` via Skill tool — context isolation requires `/clear` first
+- **NEVER**: Exceed 65% context budget in this phase
+
 ## Context Budget
 - Start: ~30-35% (spec + test references)
 - End: ~55-60% (spec + tests + research findings)
@@ -474,11 +486,9 @@ In your research document, include:
 `[actual command from repo]`
 ```
 
-## Intelligent Auto-Advance to Next Phase
+## Phase Complete
 
-**After research is complete and saved, suggest the next step.**
-
-Present this to the user:
+After research is complete and the research document is saved, present:
 
 ```
 ✅ Implementation Research Complete!
@@ -492,45 +502,14 @@ Key findings:
   - Implementation order defined
   - Patterns discovered
 
-─────────────────────────────────────────────────
-Next Step: Implementation (Phase 4)
-─────────────────────────────────────────────────
+CONTEXT ISOLATION — run /clear before continuing.
+The implementer should work from the research plan with fresh perspective.
 
-The next phase is to write code following the research plan to make
-the failing tests pass. This is the core TDD GREEN phase.
-
-Command:
+Next command (after /clear):
   /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass
-
-Would you like me to proceed to implementation?
-  → Yes - I'll run the command automatically
-  → No - I'll stop here, you can run it manually later
 ```
 
-**Use AskUserQuestion:**
-- Question: "Proceed to implementation phase?"
-- Options:
-  1. "Yes, start implementation now (Recommended)" - Auto-run `/implement`
-  2. "No, I'll run it manually later" - Stop and provide command
-
-**If user selects "Yes":**
-```
-Great! Starting implementation...
-
-Running: /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass
-```
-Then invoke the Skill tool with:
-- skill: "implement"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass"
-
-**If user selects "No":**
-```
-No problem! When you're ready, run:
-
-  /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass
-
-I'll be here when you need me.
-```
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for implementation.
 
 ---
 

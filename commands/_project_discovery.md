@@ -75,6 +75,37 @@ Check for language-specific manifest files in the project root (and common subdi
 
 **Multi-language projects:** Many repos contain multiple languages (e.g., Go backend + TypeScript frontend). Detect all and note which parts of the codebase use which language.
 
+### Version Detection
+
+After identifying languages, detect exact versions from manifest files and version files:
+
+| Source File | Version Location |
+|---|---|
+| `go.mod` | `go` directive (e.g., `go 1.22`) |
+| `package.json` | `engines.node`, `engines.npm`; check `tsconfig.json` for TS target |
+| `Cargo.toml` | `edition` field (e.g., `edition = "2021"`); `rust-toolchain.toml` for Rust version |
+| `pyproject.toml` | `requires-python` field; `[tool.poetry.dependencies].python` |
+| `pom.xml` | `<java.version>` or `<maven.compiler.source>` |
+| `build.gradle` / `build.gradle.kts` | `sourceCompatibility`, `targetCompatibility` |
+| `*.csproj` | `<TargetFramework>` (e.g., `net8.0`) |
+| `mix.exs` | `elixir` key in `project/0` |
+
+**Key framework versions** — check for:
+- `package.json` dependencies: React, Next.js, Vue, Angular, Express, etc.
+- `go.mod` requires: gin, echo, fiber, etc.
+- `pyproject.toml` / `requirements.txt`: Django, Flask, FastAPI, etc.
+- `pom.xml` / `build.gradle`: Spring Boot, Quarkus, etc.
+- `Gemfile`: Rails version
+
+**Version-specific tooling files** — also check:
+- `.node-version`, `.nvmrc` — Node.js version
+- `.python-version` — Python version
+- `rust-toolchain.toml` — Rust version
+- `.tool-versions` (asdf) — multiple tool versions
+- `.java-version` — Java version
+
+**If versions cannot be determined, record the language/framework without a version. Do not guess.**
+
 ---
 
 ## 3. Test Conventions
@@ -219,7 +250,8 @@ Auto-detection works without this file. The config is for projects that want exp
 
 ```markdown
 ## Project Context
-- **Language(s)**: [e.g., Go, TypeScript]
+- **Language(s)**: [e.g., Go 1.22, TypeScript 5.3]
+- **Key frameworks**: [e.g., React 18.2, Next.js 14.1, or "none"]
 - **Test framework**: [e.g., go test + testify, Jest, pytest]
 - **Test command**: [e.g., make test, npm test]
 - **Lint command**: [e.g., make lint, npm run lint]

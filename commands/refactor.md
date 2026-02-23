@@ -22,9 +22,8 @@ The refactoring process uses plan mode for strategic planning:
 - User approval before making changes
 
 **Why AskUserQuestion instead of ExitPlanMode:**
-- ExitPlanMode presents Claude Code's default options including "Clear context and implement plan"
-- If the user selects that option, the orchestrator loses conversation state and cannot route to the next phase
-- AskUserQuestion preserves context so the workflow can continue seamlessly
+- AskUserQuestion lets us present refactoring-specific approval options
+- ExitPlanMode's default options don't match the refactoring approval workflow
 
 ## Project Context
 
@@ -37,6 +36,19 @@ The `## Project Context` section contains the test command, lint command, format
 - Creating PRs/MRs on the right platform
 
 **If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Read `current-work.md` for project context; run tests after each refactoring group
+- **ALWAYS**: Enter Plan Mode for system assessment; run linters and formatters after changes
+- **ASK**: User must approve refactoring strategy before execution
+- **ASK**: If refactoring reveals spec deviations, flag for user decision
+- **ASK**: If refactoring would change API contracts or data models, get explicit approval
+- **NEVER**: Break existing tests — tests must stay GREEN throughout refactoring
+- **NEVER**: Add new features during refactoring — only improve existing implementation
+- **NEVER**: Exceed 45% context budget in this phase
 
 ## Context Budget
 - Start: ~25-30% (implementation reference)
@@ -264,6 +276,13 @@ Use this checklist during system assessment to identify issues:
 - [ ] **Mock data**: Test fixtures are realistic and maintainable
 - [ ] **Clean up test code**: Apply refactoring to tests too
 
+#### Spec Conformance
+- [ ] **Acceptance criteria still met**: All spec acceptance criteria pass after refactoring
+- [ ] **API contracts match spec**: Endpoints, request/response formats unchanged
+- [ ] **No unintended schema/type changes**: Data models match original spec definitions
+- [ ] **Error responses match spec**: Error codes, messages, and formats are preserved
+- [ ] **Non-functional requirements unchanged**: Performance, security, and reliability are not degraded
+
 #### Repository Conventions
 - [ ] **Code formatting**: Run the project's formatter (discover from Makefile, CI config, or editor config)
 - [ ] **Linting**: Pass the project's linter (discover from Makefile, CI config, or lint config files)
@@ -450,14 +469,12 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 8. ✅ Changes committed
 9. ✅ Context under 40%
 
-## Workflow Complete - Create Pull Request
+## Workflow Complete
 
-**After refactoring is complete and all tests still pass, the feature is ready for review.**
-
-Present this to the user:
+After refactoring is complete, all tests still pass, and the refactoring document is saved, present:
 
 ```
-🎉 Workflow Complete!
+✅ TDD Workflow Complete!
 
 Refactoring saved to:
   ai-context/refactoring/[date]_[ticket]_[feature]_refactoring.md
@@ -475,55 +492,12 @@ Full Workflow Completed:
   ✅ Phase 4: Implementation (GREEN)
   ✅ Phase 5: Refactor (GREEN)
 
-─────────────────────────────────────────────────
-Next Step: Create Pull Request
-─────────────────────────────────────────────────
-
-Your feature is complete and ready for code review!
-
-Create a PR/MR using your git platform's tool or web interface.
-
-Would you like me to help create a pull request?
-  → Yes - I'll guide you through PR creation
-  → No - I'll provide the command, you create it manually
+Next steps:
+  1. Create a PR (gh pr create / glab mr create)
+  2. After merge: /finish_work
 ```
 
-**Use AskUserQuestion:**
-- Question: "Create pull request now?"
-- Options:
-  1. "Yes, help me create a PR" - Provide PR creation guidance
-  2. "No, I'll create it manually" - Just show the command
-
-**If user selects "Yes":**
-```
-Great! Let's create a pull request.
-
-I'll need a few details:
-
-1. PR Title (following project's commit/PR conventions):
-   [type](scope): [brief feature description]
-
-2. PR Description:
-   I can generate a comprehensive PR description including:
-   - Summary of changes
-   - Testing performed
-   - Link to specification
-   - All workflow artifacts
-
-Should I create the PR with auto-generated description?
-```
-
-Then if they agree, detect the git platform and run the appropriate command:
-- **GitHub:** `gh pr create --title "[title]" --body "[description]"`
-- **GitLab:** `glab mr create --title "[title]" --description "[description]"`
-- **Other:** Provide the title and description for the user to create manually via web interface
-
-**If user selects "No":**
-```
-No problem! Create your PR/MR through your platform's CLI or web interface.
-
-Great work on completing the full TDD workflow!
-```
+**Do NOT offer to auto-create the PR or invoke any further Skill tools.** The workflow is complete.
 
 ---
 

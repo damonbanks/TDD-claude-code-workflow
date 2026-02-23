@@ -10,6 +10,8 @@ This repo provides reusable Claude Code commands and an `ai-context/` directory 
 
 Each phase produces artifacts that feed into the next, with context management built in to keep Claude effective across long workflows.
 
+**Design principle:** Each phase runs in a fresh context (`/clear` between phases). Phases communicate only through artifact files on disk — this prevents the LLM's reasoning from bleeding across phase boundaries, preserving TDD's role separation.
+
 ## Commands
 
 | Command | Purpose |
@@ -79,7 +81,7 @@ To override auto-detection, copy `ai-context/.workflow-config.yml.template` to `
 - **Plan Mode** is used for spec, bug analysis, research, and refactor assessment — exploration only, requires approval before proceeding
 - **Implementation Mode** is used for writing tests, code, and executing refactors
 - Artifacts are saved to `ai-context/` with a consistent naming convention: `YYYY-MM-DD_TICKET-ID_feature-name_type.md` (ticket portion is optional)
-- Context is cleared between phases to keep Claude within budget
+- **Context isolation** between phases — run `/clear` before each new phase so the LLM approaches each role (spec author, test writer, researcher, implementer, refactorer) with fresh perspective. Phases communicate only through artifact files in `ai-context/`
 
 See [`ai-context/WORKFLOW_GUIDE.md`](ai-context/WORKFLOW_GUIDE.md) for the full guide.
 
