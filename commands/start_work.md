@@ -9,6 +9,18 @@ Determine the type of work to be done (new feature, bug fix, or resume existing 
 /start_work [optional: brief description or ticket ID]
 ```
 
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Check current branch before starting; read `current-work.md` if it exists
+- **ALWAYS**: Run project discovery and cache results; save work state to `current-work.md`
+- **ASK**: Confirm branch creation with user; ask for ticket ID if not auto-detected
+- **ASK**: Confirm work type selection before routing to workflow
+- **NEVER**: Write code on main branch — create a feature branch first
+- **NEVER**: Auto-invoke next phase via Skill tool without user confirmation
+- **NEVER**: Skip project discovery — every phase depends on cached project context
+
 ## Process
 
 ### Step 0: Branch Safety Check
@@ -151,7 +163,8 @@ Follow the protocol defined in `commands/_project_discovery.md`:
 
 ```markdown
 ## Project Context
-- **Language(s)**: [e.g., Go, TypeScript]
+- **Language(s)**: [e.g., Go 1.22, TypeScript 5.3]
+- **Key frameworks**: [e.g., React 18.2, Next.js 14.1, or "none"]
 - **Test framework**: [e.g., go test + testify, Jest, pytest]
 - **Test command**: [e.g., make test, npm test]
 - **Lint command**: [e.g., make lint, npm run lint]
@@ -168,7 +181,8 @@ Follow the protocol defined in `commands/_project_discovery.md`:
 **Present a brief summary to the user:**
 ```
 Project detected:
-  Language:   [language(s)]
+  Language:   [language(s) with versions]
+  Frameworks: [key frameworks with versions]
   Tests:      [test command]
   Platform:   [git platform]
   Commits:    [convention summary]
@@ -214,7 +228,7 @@ Based on the user's selection, guide them through the appropriate workflow:
    - Output: Improved code + `ai-context/refactoring/[date]_[ticket]_[feature]_refactoring.md`
    - Action: Optimize, document, and cleanup while keeping tests green
 
-**Intelligent Auto-Advance**:
+**After Setup:**
 ```
 ✅ New Feature Workflow Selected
 
@@ -225,21 +239,9 @@ This workflow follows 5 phases:
   4. Implement - Make tests pass (TDD GREEN)
   5. Refactor - Optimize & document (TDD REFACTOR)
 
-─────────────────────────────────────────────────
-Starting: Phase 1 - Specification
-─────────────────────────────────────────────────
-
 Ticket: [TICKET-ID] (collected in Step 2)
 
-I'll gather requirements and create a comprehensive specification.
-
-Please provide a feature description or requirements.
-
-Example: "Add user profile management with edit capabilities"
-
-Ready to start the specification phase?
-  → Yes - Start /create_spec now
-  → No - I'll provide requirements later
+Ready to create the specification.
 ```
 
 **Use AskUserQuestion:**
@@ -249,19 +251,7 @@ Ready to start the specification phase?
   2. "No, I'll start manually later" - Stop and provide guidance
 
 **If user selects "Yes":**
-Ask for requirements:
-```
-Great! Please provide your feature requirements:
-  (You can provide a brief description, I'll ask clarifying questions)
-```
-
-After user provides requirements, run:
-```
-Starting specification phase...
-
-Running: /create_spec [user's requirements]
-```
-Then invoke the Skill tool with:
+Ask for requirements, then invoke the Skill tool with:
 - skill: "create_spec"
 - args: "[user's requirements]"
 
@@ -272,127 +262,7 @@ No problem! When you're ready, run:
   /create_spec [your feature description]
 
 I've created current-work.md to track your progress.
-I'll be here when you need me.
 ```
-
-### Phase Transitions (New Feature) [MANDATORY]
-
-**TDD requires strict phase ordering. These transitions are MANDATORY and cannot be skipped.**
-
-**After each phase command completes, the orchestrator MUST route to the next phase in order. Do NOT skip phases.**
-
-#### After Phase 1 (Spec) → Phase 2 (Tests) [REQUIRED - TDD RED]
-
-**CRITICAL: After `/create_spec` completes and the spec is approved, the NEXT step MUST be test generation. Never skip directly to research or implementation.**
-
-After the `/create_spec` skill completes:
-
-1. Update `current-work.md` to mark Spec Phase complete
-2. Present the mandatory Phase 2 transition:
-
-```
-✅ Phase 1: Specification Complete!
-
-─────────────────────────────────────────────────
-MANDATORY Next Step: Generate Tests (Phase 2)
-─────────────────────────────────────────────────
-
-TDD requires writing failing tests BEFORE any implementation.
-This step is REQUIRED and cannot be skipped.
-
-Command:
-  /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-Proceed to test generation?
-  → Yes - Generate tests now (Recommended)
-  → No - I'll run it manually later
-```
-
-**Use AskUserQuestion:**
-- Question: "Proceed to test generation? (Required for TDD)"
-- Options:
-  1. "Yes, generate tests now (Recommended)"
-  2. "No, I'll run it manually later"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "generate_tests"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md"
-
-**If user selects "No":**
-```
-When you're ready, the NEXT command is:
-
-  /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-⚠️  Do NOT skip to research or implementation. TDD requires tests first.
-```
-
-**DO NOT route to `/research_implementation` or `/implement` until Phase 2 (test generation) is complete.**
-
----
-
-#### After Phase 2 (Tests) → Phase 3 (Research) [TDD RED confirmed]
-
-After `/generate_tests` completes and tests are verified as failing:
-
-1. Update `current-work.md` to mark Test Phase complete
-2. Route to Phase 3:
-
-**Use AskUserQuestion:**
-- Question: "Proceed to research implementation?"
-- Options:
-  1. "Yes, research implementation now (Recommended)"
-  2. "No, I'll run it manually later"
-  3. "Skip to implementation (not recommended)"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "research_implementation"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md"
-
----
-
-#### After Phase 3 (Research) → Phase 4 (Implement) [TDD GREEN]
-
-After `/research_implementation` completes:
-
-1. Update `current-work.md` to mark Research Phase complete
-2. Route to Phase 4:
-
-**Use AskUserQuestion:**
-- Question: "Proceed to implementation?"
-- Options:
-  1. "Yes, start implementation now (Recommended)"
-  2. "No, I'll run it manually later"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "implement"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md --make-tests-pass"
-
----
-
-#### After Phase 4 (Implement) → Phase 5 (Refactor) [TDD REFACTOR]
-
-After `/implement` completes and all tests pass:
-
-1. Update `current-work.md` to mark Implement Phase complete
-2. Route to Phase 5:
-
-**Use AskUserQuestion:**
-- Question: "Proceed to refactoring?"
-- Options:
-  1. "Yes, refactor now (Recommended)"
-  2. "No, I'll run it manually later"
-  3. "Skip, feature is complete - create PR"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "refactor"
-- args: "@ai-context/implementation/[date]_[ticket]_[feature]_implementation.md"
-
----
 
 ## Workflow B: Bug Fix
 
@@ -476,7 +346,7 @@ Please provide:
 
 5. **Exit Plan Mode** to get user approval
 
-### Step 2: Auto-Advance to Test Generation
+### Step 2: Phase Complete — Advance to Test Generation
 
 After bug analysis is approved:
 ```
@@ -486,88 +356,13 @@ Root cause identified: [brief summary]
 
 Saved to: ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md
 
-─────────────────────────────────────────────────
-Next Step: Create Reproduction Test
-─────────────────────────────────────────────────
+CONTEXT ISOLATION — run /clear before continuing.
+The test writer must work from the bug analysis document alone,
+not from the investigator's reasoning.
 
-I'll create a test that reproduces the bug (it should fail).
-
-Command:
+Next command (after /clear):
   /generate_tests @ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md
-
-Note: This will create a focused reproduction test, not comprehensive test suite.
-
-Proceed to create reproduction test?
-  → Yes - Create test now (Recommended)
-  → No - I'll create it manually later
 ```
-
-**If Yes:** Invoke Skill tool:
-- skill: "generate_tests"
-- args: "@ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md"
-
-### Step 3: Auto-Advance to Implementation (Skip Research)
-
-After reproduction test is created:
-```
-✅ Reproduction Test Created!
-
-Status: Test failing ✓ (Bug confirmed)
-
-─────────────────────────────────────────────────
-Next Step: Implement Fix (Skip Research for Bugs)
-─────────────────────────────────────────────────
-
-I'll implement the fix to make the test pass.
-
-Command:
-  /implement @ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md --fix-bug
-
-Note: Skipping research phase - bug fixes are focused and don't need
-      extensive pattern discovery.
-
-Proceed to implement fix?
-  → Yes - Implement fix now (Recommended)
-  → No - I'll implement it manually later
-```
-
-**If Yes:** Invoke Skill tool:
-- skill: "implement"
-- args: "@ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md --fix-bug"
-
-### Step 4: Completion (Skip Refactor Unless Needed)
-
-After fix is implemented:
-```
-✅ Bug Fixed!
-
-Status: Test passing ✓ (Bug resolved)
-
-─────────────────────────────────────────────────
-Next Step: Create Pull Request
-─────────────────────────────────────────────────
-
-Bug fix is complete and tested. Ready for review.
-
-Suggested PR command (adapt to your git platform):
-  gh pr create --title "fix(scope): [bug description]"
-
-Options:
-  → Create PR now - I'll help generate PR description
-  → Refactor first - Code works but needs cleanup (optional)
-  → I'll create PR manually
-```
-
-**Use AskUserQuestion:**
-- Question: "How would you like to proceed?"
-- Options:
-  1. "Create PR now (Recommended for simple bugs)"
-  2. "Refactor first (if code needs cleanup)"
-  3. "I'll handle it manually"
-
-**If "Create PR":** Help create PR with bug fix description
-**If "Refactor":** Invoke `/refactor` command
-**If "Manual":** Provide PR command and exit
 
 ---
 
@@ -588,106 +383,6 @@ Options:
 - Still follows TDD (test before fix)
 - Reuses existing commands
 - Maintains traceability with bug analysis doc
-
-### Phase Transitions (Bug Fix) [MANDATORY]
-
-**TDD requires strict phase ordering even for bug fixes. These transitions are MANDATORY and cannot be skipped.**
-
-**After each phase command completes, the orchestrator MUST route to the next phase in order. Do NOT skip the test phase.**
-
-#### After Step 1 (Bug Analysis) → Step 2 (Reproduction Test) [REQUIRED - TDD RED]
-
-**CRITICAL: After bug analysis is approved and Plan Mode is exited, the NEXT step MUST be creating a reproduction test. Never skip directly to implementation.**
-
-After bug analysis is approved:
-
-1. Update `current-work.md` to mark Bug Analysis complete
-2. Present the mandatory Step 2 transition:
-
-```
-✅ Step 1: Bug Analysis Complete!
-
-Root cause identified: [brief summary]
-Saved to: ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md
-
-─────────────────────────────────────────────────
-MANDATORY Next Step: Create Reproduction Test (Step 2)
-─────────────────────────────────────────────────
-
-TDD requires a failing test that reproduces the bug BEFORE implementing the fix.
-This step is REQUIRED and cannot be skipped.
-
-Command:
-  /generate_tests @ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md
-
-Proceed to create reproduction test?
-  → Yes - Create test now (Recommended)
-  → No - I'll create it manually later
-```
-
-**Use AskUserQuestion:**
-- Question: "Proceed to create reproduction test? (Required for TDD)"
-- Options:
-  1. "Yes, create reproduction test now (Recommended)"
-  2. "No, I'll create it manually later"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "generate_tests"
-- args: "@ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md"
-
-**If user selects "No":**
-```
-When you're ready, the NEXT command is:
-
-  /generate_tests @ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md
-
-⚠️  Do NOT skip to implementation. TDD requires a failing test first.
-```
-
-**DO NOT route to `/implement` until the reproduction test is created and verified as failing.**
-
----
-
-#### After Step 2 (Reproduction Test) → Step 3 (Implement Fix) [TDD GREEN]
-
-After `/generate_tests` completes and reproduction test is verified as failing:
-
-1. Update `current-work.md` to mark Test Phase complete
-2. Route to Step 3 (skip research for bug fixes):
-
-**Use AskUserQuestion:**
-- Question: "Proceed to implement fix?"
-- Options:
-  1. "Yes, implement fix now (Recommended)"
-  2. "No, I'll implement it manually later"
-
-**If user selects "Yes":**
-Invoke the Skill tool with:
-- skill: "implement"
-- args: "@ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md --fix-bug"
-
----
-
-#### After Step 3 (Implement Fix) → Step 4 (PR or Refactor)
-
-After `/implement` completes and reproduction test passes:
-
-1. Update `current-work.md` to mark Implementation complete
-2. Route to PR or optional refactor:
-
-**Use AskUserQuestion:**
-- Question: "Bug fix complete. How would you like to proceed?"
-- Options:
-  1. "Create PR now (Recommended for simple bugs)"
-  2. "Refactor first (if code needs cleanup)"
-  3. "I'll handle it manually"
-
-**If "Create PR":** Help create PR with bug fix description
-**If "Refactor":** Invoke Skill tool with skill: "refactor", args: "@ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md"
-**If "Manual":** Provide PR command and exit
-
----
 
 ## Workflow C: Resume Work
 
@@ -821,31 +516,24 @@ Would you like me to continue where you left off?
 
 ---
 
-### Step 4: Auto-Continue with Context Pre-Loaded
+### Step 4: Present Next Command
 
 **If user selects "Yes":**
 
-Automatically invoke the appropriate command with context:
+Present the next command for the user to run (do NOT invoke Skill tools — the user must run the command after `/clear`):
 
 ```
-Great! Continuing [phase name]...
+To continue, run /clear first, then:
 
-Loading context:
-  - Spec: [file]
-  - Tests: [file if exists]
-  - Research: [file if exists]
-
-Running: /[next-command] @ai-context/[type]/[file].md
+  /[next-command] @ai-context/[type]/[file].md
 ```
-
-Then invoke Skill tool with appropriate skill and args.
 
 **Phase-to-Command Mapping:**
-- Spec incomplete → skill: "create_spec", args: "[continue or requirements]"
-- Tests incomplete → skill: "generate_tests", args: "@ai-context/specs/[file].md"
-- Research incomplete → skill: "research_implementation", args: "@ai-context/specs/[file].md"
-- Implementation incomplete → skill: "implement", args: "@ai-context/specs/[file].md --make-tests-pass"
-- Refactor incomplete → skill: "refactor", args: "@ai-context/implementation/[file].md"
+- Spec incomplete → `/create_spec [continue or requirements]`
+- Tests incomplete → `/generate_tests @ai-context/specs/[file].md`
+- Research incomplete → `/research_implementation @ai-context/specs/[file].md`
+- Implementation incomplete → `/implement @ai-context/specs/[file].md --make-tests-pass`
+- Refactor incomplete → `/refactor @ai-context/implementation/[file].md`
 
 **If user selects "No":**
 ```
@@ -930,10 +618,9 @@ This feature looks done! Options:
 - ✅ Determines next phase intelligently
 - ✅ Shows clear progress summary
 
-**Auto-Continue:**
-- ✅ Suggests exact next command
-- ✅ Pre-loads context from artifacts
-- ✅ Auto-runs if approved
+**Resume Guidance:**
+- ✅ Suggests exact next command (after `/clear`)
+- ✅ References correct artifact files
 - ✅ Handles edge cases gracefully
 
 **No Manual Tracking Needed:**
@@ -941,39 +628,23 @@ This feature looks done! Options:
 - AI figures out where you are
 - One click to continue
 
-### Phase Transitions After Resume [MANDATORY]
-
-**After a resumed phase completes, the orchestrator MUST route to the next phase using the appropriate workflow's phase transitions.**
-
-**Based on Work Type detected in `current-work.md`:**
-
-- **New Feature**: Follow the Phase Transitions defined in **Workflow A "Phase Transitions (New Feature) [MANDATORY]"**
-  - Phase order: Spec → Tests → Research → Implement → Refactor
-- **Bug Fix**: Follow the Phase Transitions defined in **Workflow B "Phase Transitions (Bug Fix) [MANDATORY]"**
-  - Phase order: Analysis → Test → Fix → PR
-
-**CRITICAL: The same TDD phase ordering rules apply when resuming work. Do NOT skip phases.**
-
-Specifically after a resumed phase completes:
-- Spec completed → Route to **test generation (Phase 2)** [MANDATORY]
-- Tests completed → Route to **research** (New Feature) or **implementation** (Bug Fix)
-- Research completed → Route to **implementation (Phase 4)**
-- Implementation completed → Route to **refactor (Phase 5)** or **PR** (Bug Fix)
-
-**Use the exact AskUserQuestion prompts and Skill invocations defined in the Workflow A or Workflow B Phase Transitions sections above. Do NOT end the workflow without presenting the next phase transition.**
-
 ---
 
-## Context Management
+## Context Isolation Protocol
 
-**Between Work Types**:
-- Clear context between different work items
-- Each work item should be independent
+**TDD integrity requires strict context isolation between phases.** Each phase must work from artifact files alone, not from the previous phase's reasoning in the context window.
 
-**Within Work Types**:
-- New Feature: Clear context between phases
-- Bug Fix: May keep context across phases (simpler workflow)
-- Resume Work: Load only necessary artifacts for current phase
+**Why isolation matters:**
+- The spec author's reasoning must not bleed into the test writer
+- The test designer's analysis must not bleed into the implementer
+- Each role should bring fresh perspective to its phase
+
+**Between ALL phases** (including Bug Fix):
+1. Complete the current phase
+2. Run `/clear` to reset context
+3. Run the next phase command, which reads artifact files from disk
+
+**Phases communicate only through artifact files in `ai-context/`.**
 
 **Tracking Progress**:
 
@@ -993,7 +664,8 @@ ai-context/current-work.md
 **Current Phase**: Spec | Test | Research | Implement | Refactor
 
 ## Project Context
-- **Language(s)**: [discovered languages]
+- **Language(s)**: [discovered languages with versions, e.g., Go 1.22, TypeScript 5.3]
+- **Key frameworks**: [discovered frameworks with versions, e.g., React 18.2, or "none"]
 - **Test framework**: [discovered framework]
 - **Test command**: [discovered command]
 - **Lint command**: [discovered command or "none"]
@@ -1131,7 +803,7 @@ ai-context/
 ### New Feature
 - Don't skip phases
 - Take time in spec phase to get requirements right
-- Clear context between phases
+- Run `/clear` between each phase
 - Commit at each phase
 
 ### Bug Fix

@@ -21,9 +21,8 @@ When this command is invoked:
 - Allows for course correction before investing in tests/code
 
 **Why AskUserQuestion instead of ExitPlanMode:**
-- ExitPlanMode presents Claude Code's default options including "Clear context and implement plan"
-- If the user selects that option, the orchestrator loses conversation state and cannot route to the next TDD phase
-- AskUserQuestion preserves context so phase transitions work correctly
+- AskUserQuestion lets us present spec-specific approval options
+- ExitPlanMode's default options don't match the spec approval workflow
 
 ## Project Context
 
@@ -32,6 +31,19 @@ When this command is invoked:
 The `## Project Context` section contains the language, test framework, build/test/lint commands, git platform, and commit convention discovered by `/start_work`. Use these throughout this phase instead of guessing or re-discovering.
 
 **If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+
+## Workflow Boundaries
+
+**Full reference: `commands/_boundaries.md`**
+
+- **ALWAYS**: Read `current-work.md` for project context; save spec to `ai-context/specs/`; follow discovered patterns
+- **ALWAYS**: Enter Plan Mode before exploring; commit spec after approval
+- **ASK**: User must approve specification before proceeding to test phase
+- **ASK**: If requirements are ambiguous, ask clarifying questions — don't assume
+- **ASK**: If a requirement seems infeasible, flag it for user decision
+- **NEVER**: Skip the question phase (Phase 1) — gather requirements before writing
+- **NEVER**: Auto-invoke `/generate_tests` via Skill tool — context isolation requires `/clear` first
+- **NEVER**: Exceed 40% context budget in this phase
 
 ## Context Budget
 - Start: ~20-25%
@@ -266,6 +278,14 @@ For each layer, the research phase will discover:
 
 ## Dependencies
 
+### Stack Versions
+Reference exact versions from Project Context (discovered by `/start_work`):
+- **Language**: [e.g., Go 1.22, TypeScript 5.3]
+- **Key frameworks**: [e.g., React 18.2, Next.js 14.1, Django 5.0]
+- **Runtime**: [e.g., Node 20.11, Python 3.12]
+
+Use version-specific APIs and patterns. If a version-specific feature is required, note it explicitly.
+
 ### Internal Dependencies
 - [Discover from codebase - what existing code does this feature depend on?]
 
@@ -291,6 +311,22 @@ How we measure if this feature is successful:
 - Zero security vulnerabilities
 - All acceptance criteria met
 - Test coverage > 80%
+
+## Requirements Traceability
+
+| Requirement ID | Description | Test ID(s) | Status |
+|---|---|---|---|
+| REQ-1 | [summary from requirement] | (assigned during /generate_tests) | Pending |
+| REQ-2 | [summary] | (assigned during /generate_tests) | Pending |
+| EDGE-1 | [summary] | (assigned during /generate_tests) | Pending |
+| ERR-1 | [summary] | (assigned during /generate_tests) | Pending |
+
+**Status values:** Pending | Tested | Verified | N/A
+
+- **Pending**: Requirement defined, no tests yet
+- **Tested**: Test(s) written and assigned (during `/generate_tests`)
+- **Verified**: Test(s) pass against implementation (during `/implement`)
+- **N/A**: Requirement not applicable (must be approved by user)
 
 ## Testing Strategy
 
@@ -324,6 +360,31 @@ Discover test framework and patterns from existing tests in the repository.
 - Design mockups: [link if available]
 - Related tickets: [TICKET-ID]
 - API documentation: [link if available]
+
+## Spec Summary
+
+> **Only generate this section if the spec exceeds 200 lines.**
+> Later phases can read the summary first, then selectively load relevant sections to stay within context budget.
+
+**Feature**: [1-2 sentence summary of what this feature does and why]
+
+**Requirements Overview**:
+
+| ID | Summary | Priority |
+|---|---|---|
+| REQ-1 | [brief summary] | Must have |
+| REQ-2 | [brief summary] | Must have |
+| EDGE-1 | [brief summary] | Should have |
+| ERR-1 | [brief summary] | Must have |
+
+**Key API Endpoints**: [list endpoints if applicable]
+
+**Key Data Models**: [list models if applicable]
+
+**Top Constraints**:
+- [constraint 1]
+- [constraint 2]
+- [constraint 3]
 
 ---
 
@@ -363,11 +424,11 @@ Instead, present a summary of the specification to the user, then use **AskUserQ
 
 - **Question**: "Does this specification look correct?"
 - **Options**:
-  1. "Yes, proceed to test generation (Recommended)" — Route to Phase 2
+  1. "Yes, approve specification (Recommended)" — Mark spec as approved
   2. "No, I have feedback" — Collect revision notes and update the spec
   3. "Let me review the saved file first" — Point to the file path and wait
 
-**If approved (option 1):** Continue directly to Step 3 (commit) and then Step 5 (auto-advance to tests).
+**If approved (option 1):** Continue to Step 3 (commit) and Step 4 (update status), then present the Phase Complete message.
 **If feedback (option 2):** Incorporate changes, update the spec file, and ask again.
 **If reviewing (option 3):** Provide the file path and wait for the user to respond.
 
@@ -385,11 +446,9 @@ git commit -m "[commit message following project conventions, e.g., docs(core): 
 - Update `ai-context/current-work.md` to mark Spec Phase as complete
 - Update specification status from "Draft" to "Approved"
 
-### Step 5: Intelligent Auto-Advance to Next Phase
+### Step 5: Phase Complete
 
-**After the specification is approved and saved, suggest the next step.**
-
-Present this to the user:
+After the specification is approved, committed, and status updated, present:
 
 ```
 ✅ Specification Complete!
@@ -397,58 +456,15 @@ Present this to the user:
 Saved to: ai-context/specs/[date]_[ticket]_[feature]_spec.md
 Status: Approved
 
-─────────────────────────────────────────────────
-Next Step: Generate Tests (Phase 2)
-─────────────────────────────────────────────────
+CONTEXT ISOLATION — run /clear before continuing.
+The test writer must work from the spec document alone,
+not from the spec author's reasoning.
 
-The next phase is to create failing tests based on this specification.
-This follows true TDD principles: tests before implementation.
-
-Command:
+Next command (after /clear):
   /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-Would you like me to proceed to generating tests?
-  → Yes - I'll run the command automatically
-  → No - I'll stop here, you can run it manually later
-  → Skip - Skip test generation and go to implementation (not recommended)
 ```
 
-**Use AskUserQuestion:**
-- Question: "Proceed to test generation phase?"
-- Options:
-  1. "Yes, generate tests now (Recommended)" - Auto-run `/generate_tests`
-  2. "No, I'll run it manually later" - Stop and provide command
-  3. "Skip to implementation (not recommended)" - Jump to `/implement`
-
-**If user selects "Yes":**
-```
-Great! Starting test generation...
-
-Running: /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-```
-Then invoke the Skill tool with:
-- skill: "generate_tests"
-- args: "@ai-context/specs/[date]_[ticket]_[feature]_spec.md"
-
-**If user selects "No":**
-```
-No problem! When you're ready, run:
-
-  /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-I'll be here when you need me.
-```
-
-**If user selects "Skip":**
-```
-⚠️  Skipping test generation is not recommended (violates TDD principles).
-
-However, if you want to proceed directly to implementation:
-
-  /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md
-
-Note: You'll need to create tests manually or after implementation.
-```
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for test generation.
 
 ## Context Management
 

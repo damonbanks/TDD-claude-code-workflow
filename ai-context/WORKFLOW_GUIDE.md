@@ -12,32 +12,18 @@
 This single command will:
 1. Ask what type of work you're doing
 2. Guide you to the appropriate workflow
-3. **Automatically suggest the next step** after each phase
+3. **Tell you which command to run next** (after `/clear`)
 4. Track your progress
 5. Help you resume if you were interrupted
 
-### Intelligent Auto-Advance
+### Context Isolation
 
-After completing each phase, the workflow will:
+Each phase runs in a **fresh context** — run `/clear` between phases. After completing each phase, the workflow will:
 - Show what was accomplished
-- Suggest the next command with exact syntax
-- Ask if you want to proceed automatically
-- Run the next command if approved, or stop if you prefer manual control
+- Remind you to run `/clear`
+- Tell you the next command to run
 
-**Example:**
-```
-Specification Complete!
-
--------------------------------------------------
-Next Step: Generate Tests (Phase 2)
--------------------------------------------------
-
-Command: /generate_tests @ai-context/specs/[file].md
-
-Would you like me to proceed?
-  -> Yes - I'll run it automatically
-  -> No - I'll stop here, you run it manually later
-```
+Phases communicate **only through artifact files** in `ai-context/`.
 
 ---
 
@@ -51,13 +37,13 @@ Would you like me to proceed?
 /start_work -> Select "New Feature"
   |
 Phase 1: /create_spec [description]              <- PLAN MODE (requires approval)
-  |
+  |  (run /clear)
 Phase 2: /generate_tests @specs/[file].md
-  |
-Phase 3: /research_implementation @specs/[file].md <- Optional PLAN MODE
-  |
+  |  (run /clear)
+Phase 3: /research_implementation @specs/[file].md
+  |  (run /clear)
 Phase 4: /implement @specs/[file].md --make-tests-pass
-  |
+  |  (run /clear)
 Phase 5: /refactor @implementation/[file].md      <- PLAN MODE for assessment
   |
 Create PR
@@ -71,7 +57,7 @@ Create PR
 - **Phase 5 (Refactor)**: Uses plan mode to assess system holistically, create refactoring strategy, get approval before execution
 
 **Time investment:** Full TDD cycle, highest quality
-**Context management:** Clear between phases
+**Context management:** Run `/clear` between every phase
 
 ---
 
@@ -83,9 +69,9 @@ Create PR
 /start_work -> Select "Bug Fix"
   |
 1. Bug Analysis        <- PLAN MODE (understand, root cause, get approval)
-  |
+  |  (run /clear)
 2. Create Reproduction Test (should fail)
-  |
+  |  (run /clear)
 3. Implement Fix (make test pass)
   |
 4. Verification (check for regressions)
@@ -97,7 +83,7 @@ Create PR
 - **Phase 1 (Bug Analysis)**: Explores codebase to understand bug, identifies root cause, gets approval on approach before fixing
 
 **Time investment:** Streamlined, focused on the fix
-**Context management:** Can keep context across phases
+**Context management:** Run `/clear` between phases
 
 ---
 
@@ -148,7 +134,7 @@ This workflow uses two distinct modes:
 - WebFetch - research documentation
 - AskUserQuestion - clarify requirements
 - Write (for plan/spec files only) - document findings
-- AskUserQuestion - request approval to proceed (use this instead of ExitPlanMode to preserve orchestrator context)
+- AskUserQuestion - request approval to proceed
 
 ### Implementation Mode (Execution)
 **Used in:**
@@ -283,35 +269,66 @@ Follow the order defined in the research document. Typical pattern:
 
 ---
 
-## Context Management Strategy
+## Context Isolation
 
-### Why Context Matters
-- AI models have context limits
-- Lower context = faster responses, lower cost
-- Context budget prevents information overload
+### Why Isolation Matters
+TDD's power comes from **role separation**. When all phases share a context window, the LLM's reasoning bleeds across phase boundaries — the spec author's thinking influences the test writer, the test designer's analysis shapes the implementer. This defeats TDD's core discipline.
 
-### How to Manage Context
+### The `/clear` Protocol
+Every phase transition requires running `/clear` to reset the context window:
 
-**Between Phases**: Clear context completely
-```bash
-# User clears context in Claude Code
-# Next phase starts fresh, references previous artifacts with @ai-context/
+```
+Phase 1: /create_spec → artifacts saved → /clear
+Phase 2: /generate_tests → artifacts saved → /clear
+Phase 3: /research_implementation → artifacts saved → /clear
+Phase 4: /implement → artifacts saved → /clear
+Phase 5: /refactor → artifacts saved → done
 ```
 
-**Within Phases**: Reference artifacts, don't reload
-```bash
-# Good: Reference saved artifacts
-@ai-context/specs/2025-01-15_PROJ-123_entity-management_spec.md
+### How Phases Communicate
+Phases communicate **only through artifact files** on disk:
 
-# Bad: Copy/paste entire spec into prompt
-```
+| Phase | Reads From | Writes To |
+|-------|-----------|-----------|
+| Spec | User requirements | `ai-context/specs/` |
+| Test | Spec artifact | Test files + `ai-context/tests/` |
+| Research | Spec + test artifacts | `ai-context/research/` |
+| Implement | Research + spec artifacts | Code + `ai-context/implementation/` |
+| Refactor | Implementation artifact | Improved code + `ai-context/refactoring/` |
 
-**Context Budgets by Phase:**
+### Context Budgets by Phase
 - Spec: 30-35% (max 40%)
 - Test: 40-45% (max 50%)
 - Research: 55-60% (max 65%)
 - Implement: 50-60% (max 65%)
 - Refactor: 35-40% (max 45%)
+
+---
+
+## Workflow Boundaries
+
+The workflow uses a three-tier boundary system (defined in `commands/_boundaries.md`) to clarify what AI agents may do autonomously, what requires approval, and what is prohibited.
+
+### ALWAYS (No Approval Needed)
+- Run tests before commits; run linters after changes
+- Check branch (verify not on main); read `current-work.md`
+- Save artifacts to `ai-context/`; follow discovered patterns
+- Use the project's actual commands; commit at phase boundaries
+
+### ASK (Requires User Approval)
+- Approve specifications and refactoring strategies
+- Add dependencies; modify schemas or API contracts
+- Deviate from spec; skip phases; modify existing tests during implementation
+- Mark requirements N/A
+
+### NEVER (Hard Stop)
+- Commit secrets; write code on main
+- Auto-invoke next phase via Skill tool (context isolation requires `/clear`)
+- Skip test phase; modify tests to make them pass
+- Exceed context budget; push/force-push without request
+- Delete files outside `ai-context/` without confirmation; hardcode paths
+
+Each command file has a phase-specific `## Workflow Boundaries` section. See `commands/_boundaries.md` for the full reference.
 
 ---
 
@@ -594,7 +611,7 @@ Check your project's CI config (`.github/workflows/`, `.gitlab-ci.yml`, etc.) fo
 
 ### Do This
 - Always start with `/start_work`
-- Clear context between phases (for new features)
+- Run `/clear` between each phase
 - Commit at each phase
 - Update `current-work.md` as you progress
 - Run tests frequently
@@ -602,6 +619,7 @@ Check your project's CI config (`.github/workflows/`, `.gitlab-ci.yml`, etc.) fo
 ### Avoid This
 - Jumping directly to implementation without spec
 - Skipping the test phase
+- Chaining phases in the same context (breaks TDD isolation)
 - Carrying too much context
 - Modifying tests during implementation
 - Forgetting to track progress in `current-work.md`
