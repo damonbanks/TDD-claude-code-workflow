@@ -5,20 +5,20 @@ Create comprehensive, failing tests FIRST based on a specification, following tr
 
 ## Project Context
 
-**Before starting, read `ai-context/current-work.md` for cached project discovery results.**
+**Before starting, read `ai-context/project-context.md` for cached project discovery results.**
 
-The `## Project Context` section contains the language, test framework, test command, and commit convention discovered by `/start_work`. Use these values for:
+This file contains the language, test framework, test command, and commit convention discovered by `/start_work`. Use these values for:
 - Choosing the right test framework and assertion style
 - Running tests with the correct command
 - Formatting commit messages
 
-**If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+**If `project-context.md` doesn't exist**, run the discovery protocol from `commands/_project_discovery.md` and create it.
 
 ## Workflow Boundaries
 
 **Full reference: `commands/_boundaries.md`**
 
-- **ALWAYS**: Read `current-work.md` for project context; discover test patterns from existing tests
+- **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; discover test patterns from existing tests
 - **ALWAYS**: Verify not on main branch before creating test files; commit tests after verification
 - **ASK**: Clarify test scope and approach with user (unit, integration, mocks)
 - **ASK**: If a spec requirement cannot be tested, flag it for user decision
@@ -34,7 +34,7 @@ The `## Project Context` section contains the language, test framework, test com
 
 ## Prerequisites
 - A completed specification file in `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
-- Understanding of the project's testing frameworks (from Project Context in `current-work.md`)
+- Understanding of the project's testing frameworks (from `project-context.md`)
 
 ## Process
 

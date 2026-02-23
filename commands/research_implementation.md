@@ -24,17 +24,17 @@ Every repository is unique:
 
 ## Project Context
 
-**Before starting, read `ai-context/current-work.md` for cached project discovery results.**
+**Before starting, read `ai-context/project-context.md` for cached project discovery results.**
 
-The `## Project Context` section contains the language, test/build/lint commands, and commit convention discovered by `/start_work`. Use these values when documenting build commands and test commands in the research document — don't re-discover what's already cached.
+This file contains the language, test/build/lint commands, and commit convention discovered by `/start_work`. Use these values when documenting build commands and test commands in the research document — don't re-discover what's already cached.
 
-**If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+**If `project-context.md` doesn't exist**, run the discovery protocol from `commands/_project_discovery.md` and create it.
 
 ## Workflow Boundaries
 
 **Full reference: `commands/_boundaries.md`**
 
-- **ALWAYS**: Read `current-work.md` for project context; discover patterns from existing code
+- **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; discover patterns from existing code
 - **ALWAYS**: Save research document to `ai-context/research/`; follow discovered conventions
 - **ASK**: If research reveals the spec needs changes, flag for user decision — don't modify the spec
 - **ASK**: If new dependencies are needed, document them and note they require approval during implementation

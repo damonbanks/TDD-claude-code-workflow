@@ -89,7 +89,7 @@ When you run `/start_work`, Claude runs a discovery protocol that detects your p
 - **Git platform** from remote URL and CI/CD config files
 - **Commit convention** from recent git history and commitlint config
 
-Results are cached in `ai-context/current-work.md` under a `## Project Context` section. Every subsequent command (`/create_spec`, `/generate_tests`, `/implement`, etc.) reads this cached context so it uses the correct test command, commit format, and platform tooling — no re-discovery needed.
+Results are cached in `ai-context/project-context.md`. This file **persists across features** — `/finish_work` does not delete it. Every subsequent command (`/create_spec`, `/generate_tests`, `/implement`, etc.) reads this cached context so it uses the correct test command, commit format, and platform tooling — no re-discovery needed.
 
 If a command is run without `/start_work` first, it will run discovery on its own and cache the results.
 

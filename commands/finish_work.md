@@ -11,7 +11,7 @@ Clean up AI workflow artifacts after a PR is merged (or work is abandoned), keep
 
 ## Project Context
 
-**Read `ai-context/current-work.md` for cached project discovery results.** The `## Project Context` section contains the git platform and PR/MR command needed for Step 2 (verifying PR status).
+**Read `ai-context/project-context.md` for cached project discovery results.** It contains the git platform and PR/MR command needed for Step 2 (verifying PR status).
 
 ## Process
 
@@ -91,6 +91,7 @@ find ai-context -name "*[TICKET-ID]*" -type f -delete
 
 # Remove current-work.md if it references this ticket
 rm -f ai-context/current-work.md
+# NOTE: Do NOT remove project-context.md — it persists across features
 ```
 
 **Present summary:**
@@ -128,7 +129,7 @@ If the user selects "Clean up all artifacts":
 
 ```bash
 # List everything that would be removed
-find ai-context -name "*.md" -not -name "*.template" -not -name "WORKFLOW_GUIDE.md" -not -name "README.md" -not -name ".gitkeep" -type f
+find ai-context -name "*.md" -not -name "*.template" -not -name "WORKFLOW_GUIDE.md" -not -name "README.md" -not -name "project-context.md" -not -name ".gitkeep" -type f
 ```
 
 **Confirm with user before proceeding.**
@@ -136,6 +137,7 @@ find ai-context -name "*.md" -not -name "*.template" -not -name "WORKFLOW_GUIDE.
 **Protected files (never deleted):**
 - `ai-context/WORKFLOW_GUIDE.md`
 - `ai-context/README.md`
+- `ai-context/project-context.md`
 - `ai-context/current-work.md.template`
 - `ai-context/bugs/.gitkeep`
 

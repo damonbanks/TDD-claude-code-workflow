@@ -27,21 +27,21 @@ The refactoring process uses plan mode for strategic planning:
 
 ## Project Context
 
-**Before starting, read `ai-context/current-work.md` for cached project discovery results.**
+**Before starting, read `ai-context/project-context.md` for cached project discovery results.**
 
-The `## Project Context` section contains the test command, lint command, format command, commit convention, and git platform discovered by `/start_work`. Use these values for:
+This file contains the test command, lint command, format command, commit convention, and git platform discovered by `/start_work`. Use these values for:
 - Running tests after each refactoring group
 - Running linters and formatters
 - Formatting commit messages
 - Creating PRs/MRs on the right platform
 
-**If `current-work.md` doesn't exist or has no Project Context section**, run the discovery protocol from `commands/_project_discovery.md` and cache the results.
+**If `project-context.md` doesn't exist**, run the discovery protocol from `commands/_project_discovery.md` and create it.
 
 ## Workflow Boundaries
 
 **Full reference: `commands/_boundaries.md`**
 
-- **ALWAYS**: Read `current-work.md` for project context; run tests after each refactoring group
+- **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; run tests after each refactoring group
 - **ALWAYS**: Enter Plan Mode for system assessment; run linters and formatters after changes
 - **ASK**: User must approve refactoring strategy before execution
 - **ASK**: If refactoring reveals spec deviations, flag for user decision
