@@ -26,15 +26,42 @@ Each phase produces artifacts that feed into the next, with context management b
 
 ## Setup
 
-1. Copy the `commands/` directory to `.claude/commands/` in your project
-2. Copy the `ai-context/` directory to the root of your project
-3. Start every session with `/start_work`
+### Global install (recommended)
+
+Clone the repo and run the install script to symlink commands into your `~/.claude` profile:
+
+```bash
+git clone https://github.com/damonbanks/TDD-claude-code-workflow.git ~/.claude/TDD-claude-code-workflow
+~/.claude/TDD-claude-code-workflow/install.sh
+```
+
+To pin a specific release:
+
+```bash
+~/.claude/TDD-claude-code-workflow/install.sh v1.0.2
+```
+
+To update later:
+
+```bash
+~/.claude/TDD-claude-code-workflow/update.sh          # latest main
+~/.claude/TDD-claude-code-workflow/update.sh v1.0.2   # specific release
+```
+
+### Per-project install
+
+Copy files directly into your project:
 
 ```bash
 # From your project root
 cp -r /path/to/TDD-claude-code-workflow/commands/ .claude/commands/
 cp -r /path/to/TDD-claude-code-workflow/ai-context/ ai-context/
 ```
+
+### Then
+
+1. Copy the `ai-context/` directory to the root of your project
+2. Start every session with `/start_work`
 
 ## Compatibility
 
