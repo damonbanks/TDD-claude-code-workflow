@@ -115,6 +115,10 @@ Find and read test files for features similar to the one being built. Use these 
 Create test files in the same locations and following the same conventions as existing tests.
 
 Each test should:
+- **Have a description comment** directly above the test function that describes what the test is verifying in plain language. Do NOT reference spec IDs, requirement numbers, or ticket numbers in the description — just describe the behavior being tested. Example:
+  ```
+  // Verifies that creating a user with a valid email and name returns the new user object with a generated ID
+  ```
 - Cover a requirement from the specification
 - Follow the repository's test naming conventions
 - Use the repository's test framework and assertion style
@@ -134,11 +138,12 @@ After writing tests, map each test back to its specification requirement:
    - `T-EDGE-1-01` — test for EDGE-1
    - `T-ERR-1-01` — test for ERR-1
 
-2. **Add requirement reference comments** to each test function:
+2. **Add requirement reference comments** below the description comment on each test function:
    ```
+   // Verifies that creating a user with a valid email and name returns the new user object with a generated ID
    // Test ID: T-REQ-1-01 | Requirement: REQ-1
-   // Test ID: T-EDGE-2-01 | Requirement: EDGE-2
    ```
+   The plain-language description always comes first, followed by the traceability reference.
    Use the comment syntax appropriate for the project's language.
 
 3. **Update the spec file's traceability table**:
