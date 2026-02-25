@@ -75,7 +75,10 @@ Proceeding with implementation...
 2. Reference spec: `@ai-context/specs/[date]_[ticket]_[feature]_spec.md`
    - If the spec has a `## Spec Summary` section, read the summary first, then selectively load only the sections relevant to implementation
 3. Review test files to understand what needs to pass
-4. Verify tests are currently failing: Run the project's test command (discovered from Makefile, package.json, CI config, or README)
+4. **Establish test baseline**: Run the project's test command to determine starting state
+   - Tests from **previous layers** should be GREEN (passing) — these are the regression baseline
+   - Tests from the **current layer** should be RED (failing) — these are what you need to make pass
+   - If any previously-GREEN tests are now RED, flag as a regression and investigate before proceeding
 
 ### Phase 2: Follow Implementation Order
 Execute the implementation steps from research document IN ORDER.
@@ -108,6 +111,8 @@ After each implementation step, run tests to check progress.
 ```
 
 **Goal**: Move from RED (failing) → GREEN (passing)
+
+**Regression awareness**: After each step, verify that previously-passing tests (from earlier layers) remain GREEN. If a previously-passing test breaks, stop and fix the regression before continuing with new work.
 
 ### Phase 4: Fix Failing Tests
 If tests still fail:
@@ -231,6 +236,23 @@ Create implementation log in `ai-context/implementation/[date]_[ticket]_[feature
 After implementation is complete and all tests pass, proceed to refactoring.
 ```
 
+### Phase 5.5: Next TDD Layer
+
+After documenting the implementation, check for remaining test layers:
+
+1. **Read the spec's `## Test Plan`** to identify all defined layers
+2. **Read the test plan's `## Layer Status`** (in `ai-context/tests/`) to check which layers have been generated
+3. **If remaining layers exist**, use AskUserQuestion:
+   - **Question**: "All current-layer tests are passing. What would you like to do next?"
+   - **Options**:
+     1. "Add more tests (next layer: [layer name])" — next step is `/generate_tests`
+     2. "Proceed to refactoring" — next step is `/refactor`
+     3. "I'm done" — end workflow
+
+Record the user's choice for the Phase Complete message.
+
+---
+
 ### Phase 6: Phase Complete
 
 After implementation is complete, all tests pass, the implementation document is saved, and changes are committed, present:
@@ -245,7 +267,19 @@ Status:
   ✅ All tests passing (GREEN state)
   ✅ Feature implemented
   ✅ Code committed
+```
 
+**If user chose "Add more tests"** (from Phase 5.5):
+```
+CONTEXT ISOLATION — run /clear before continuing.
+Next layer of tests is ready to be generated.
+
+Next command (after /clear):
+  /generate_tests @ai-context/specs/[date]_[ticket]_[feature]_spec.md
+```
+
+**If user chose "Proceed to refactoring"** (or no remaining layers):
+```
 CONTEXT ISOLATION — run /clear before continuing.
 The refactorer should assess code quality with fresh eyes.
 
@@ -253,4 +287,9 @@ Next command (after /clear):
   /refactor @ai-context/implementation/[date]_[ticket]_[feature]_implementation.md
 ```
 
-**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for refactoring.
+**If user chose "I'm done":**
+```
+All done! You can create a PR when ready, or run /finish_work after merge.
+```
+
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context.

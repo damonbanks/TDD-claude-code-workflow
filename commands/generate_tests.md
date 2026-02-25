@@ -66,11 +66,29 @@ Proceeding with test generation...
 
 ---
 
+### Phase 0.5: Select Test Layer
+
+Read the specification's `## Test Plan` section to understand the defined test layers.
+
+Use AskUserQuestion to ask the user which layer to focus on:
+- **Question**: "Which test layer would you like to generate?"
+- **Options** (include only layers that have scenarios defined in the spec):
+  1. "Happy path tests (Layer 1)" (Recommended for first run)
+  2. "Error handling tests (Layer 2)"
+  3. "Edge case tests (Layer 3)"
+  4. "All layers at once"
+
+**Focus on the selected layer only.** This keeps context small and produces higher-quality tests. The user can run `/generate_tests` multiple times, once per layer, with `/implement` between each.
+
+---
+
 ### Phase 1: Analyze Specification
 1. Read the specification file provided via `@ai-context/specs/[date]_[ticket]_[feature]_spec.md`
    - If the spec has a `## Spec Summary` section, read the summary first, then selectively load only the sections relevant to test generation
-2. Identify all functional requirements, edge cases, and error scenarios
-3. Determine which layer(s) need tests:
+2. **Filter by selected layer**:
+   - If a specific layer was selected in Phase 0.5, load only that layer's section from the `## Test Plan` and the requirements it references (e.g., only REQ-* for happy path, only ERR-* for error handling, only EDGE-* for edge cases)
+   - If "All layers" was selected, load the full Test Plan and all requirements
+3. Determine which code layer(s) need tests:
    - **Backend**: Service handlers, database queries, business logic
    - **Frontend**: Components, hooks, API integration
    - **Integration**: End-to-end workflows
@@ -120,10 +138,16 @@ Each test should:
 - Use the repository's test framework and assertion style
 - FAIL because the implementation doesn't exist yet
 
-Test categories to cover:
-- **Happy path**: Core functionality works as specified
-- **Edge cases**: Boundary conditions and unusual scenarios
-- **Error handling**: Invalid input, missing data, permission errors
+Generate tests for the **selected layer only**:
+- Read the layer's scenario table from the spec's `## Test Plan`
+- Generate one or more tests per scenario in the table
+- Follow the spec's Test Approach for mocking strategy and test type
+- Reference the specific requirements (REQ-*, ERR-*, EDGE-*) from that layer
+
+If "All layers" was selected, cover all three categories:
+- **Happy path**: Core functionality works as specified (Layer 1)
+- **Error handling**: Invalid input, missing data, permission errors (Layer 2)
+- **Edge cases**: Boundary conditions and unusual scenarios (Layer 3)
 
 #### Step 3b: Populate Requirements Traceability
 
@@ -158,7 +182,10 @@ If the feature involves database operations, discover test patterns for data acc
 - Tests should fail because the implementation doesn't exist yet
 
 ### Phase 4: Document Test Plan
-Create a test plan document in `ai-context/tests/[date]_[ticket]_[feature]_tests.md`:
+
+**If a test plan already exists** (from a previous layer run), **append** the new layer's tests to it rather than creating a new document.
+
+Create (or update) a test plan document in `ai-context/tests/[date]_[ticket]_[feature]_tests.md`:
 
 ```markdown
 # Test Plan: [Feature Name]
@@ -200,9 +227,14 @@ Discover test commands from the repository (check `Makefile`, `package.json`, `R
 ## Expected Initial State
 All tests should FAIL because implementation doesn't exist yet.
 
+## Layer Status
+- [ ] Layer 1: Happy Path Tests
+- [ ] Layer 2: Error Handling Tests
+- [ ] Layer 3: Edge Case Tests
+
 ## Next Steps
 1. Verify tests fail (red)
-2. Proceed to Research Phase
+2. Proceed to Research Phase (if first layer) or Implementation Phase (if subsequent layer)
 3. Implement code to make tests pass (green)
 ```
 
@@ -238,6 +270,9 @@ After tests are created, verified as failing, committed, and test plan documente
 ```
 ✅ Tests Generated Successfully!
 
+Layer generated: [Layer N: Name]
+Remaining layers: [list remaining layers, or "None — all layers generated"]
+
 Test files created:
   - [list of test files created]
 
@@ -245,7 +280,10 @@ Test plan saved to:
   ai-context/tests/[date]_[ticket]_[feature]_tests.md
 
 Status: All tests failing ✓ (RED state — this is correct for TDD)
+```
 
+**If this is the first layer** (no research has been done yet):
+```
 CONTEXT ISOLATION — run /clear before continuing.
 The researcher must not carry the test writer's analysis.
 
@@ -253,4 +291,13 @@ Next command (after /clear):
   /research_implementation @ai-context/specs/[date]_[ticket]_[feature]_spec.md
 ```
 
-**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context for implementation research.
+**If this is a subsequent layer** (research already completed in a previous cycle):
+```
+CONTEXT ISOLATION — run /clear before continuing.
+Research already exists — proceed directly to implementation.
+
+Next command (after /clear):
+  /implement @ai-context/specs/[date]_[ticket]_[feature]_spec.md
+```
+
+**Do NOT invoke the Skill tool or offer to auto-run the next phase.** Context isolation requires a fresh context.
