@@ -141,6 +141,13 @@ Before writing any specification, ask the user clarifying questions to understan
 - Are there external APIs or services involved?
 - What data does it depend on?
 
+#### 8. Test Planning
+- What are the critical **happy path scenarios** that must work? (the core behaviors that define "it works")
+- What **error/failure conditions** need handling? (service down, resource not found, invalid input, unauthorized access, etc.)
+- What **edge cases** or boundary conditions should be tested? (empty inputs, max values, concurrent access, etc.)
+- What's the **testing approach**? (unit tests only? integration? what to mock?)
+- What **order** should these layers be implemented? (Recommend: happy path -> error handling -> edge cases)
+
 **CRITICAL**: Do not proceed to Phase 2 until you have clear answers to these questions. Use AskUserQuestion if needed.
 
 ### Phase 2: Create Specification Document
@@ -328,32 +335,37 @@ How we measure if this feature is successful:
 - **Verified**: Test(s) pass against implementation (during `/implement`)
 - **N/A**: Requirement not applicable (must be approved by user)
 
-## Testing Strategy
+## Test Plan
 
-### Unit Tests
-Discover test framework and patterns from existing tests in the repository.
-- Business logic / service functions
-- Data access / query functions
-- UI components (if applicable)
-- Utility functions and helpers
+### Layer 1: Happy Path Tests
+Tests for core behavior — the feature working as intended.
 
-### Integration Tests
-- End-to-end API flow
-- Database transaction integrity
-- Cross-layer integration
+| Scenario | Requirement | What to Verify |
+|----------|-------------|----------------|
+| [Core scenario 1] | REQ-1 | [Expected outcome] |
+| [Core scenario 2] | REQ-2 | [Expected outcome] |
 
-### Manual Testing Checklist
-- [ ] Create entity with valid input
-- [ ] Create entity with invalid input
-- [ ] Create entity without authentication
-- [ ] Create entity without authorization
-- [ ] View entity list
-- [ ] View individual entity
-- [ ] Update entity
-- [ ] Delete entity
-- [ ] Test error messages are user-friendly
-- [ ] Test keyboard navigation
-- [ ] Test screen reader compatibility
+### Layer 2: Error Handling Tests
+Tests for failure conditions — what happens when things go wrong.
+
+| Scenario | Requirement | What to Verify |
+|----------|-------------|----------------|
+| [Error scenario 1] | ERR-1 | [Expected error response] |
+| [Error scenario 2] | ERR-2 | [Expected error response] |
+
+### Layer 3: Edge Case Tests
+Tests for boundary conditions and unusual scenarios.
+
+| Scenario | Requirement | What to Verify |
+|----------|-------------|----------------|
+| [Edge case 1] | EDGE-1 | [Expected behavior] |
+| [Edge case 2] | EDGE-2 | [Expected behavior] |
+
+### Test Approach
+- **Unit tests**: [what to unit test]
+- **Integration tests**: [what needs integration testing]
+- **Mocking strategy**: [what to mock, what to test for real]
+- **Recommended implementation order**: Layer 1 -> Layer 2 -> Layer 3
 
 ## References
 - Existing patterns: [discover similar implementations in the codebase]
@@ -492,6 +504,8 @@ Before proceeding to test generation, verify:
 - ✅ Out of scope items are clear
 - ✅ Implementation layers are identified
 - ✅ Specification is testable (can generate tests from it)
+- ✅ Test Plan has specific scenarios per layer
+- ✅ Each layer maps back to requirements (REQ/ERR/EDGE)
 
 ## Tips for Better Specifications
 

@@ -36,14 +36,19 @@ Phases communicate **only through artifact files** in `ai-context/`.
 ```
 /start_work -> Select "New Feature"
   |
-Phase 1: /create_spec [description]              <- PLAN MODE (requires approval)
+Phase 1: /create_spec [description]              <- includes test plan interview
   |  (run /clear)
-Phase 2: /generate_tests @specs/[file].md
+Phase 2: /generate_tests @specs/[file].md        <- select a layer
   |  (run /clear)
-Phase 3: /research_implementation @specs/[file].md
+Phase 3: /research_implementation @specs/[file].md  <- runs once
   |  (run /clear)
-Phase 4: /implement @specs/[file].md --make-tests-pass
+Phase 4: /implement @specs/[file].md
   |  (run /clear)
+  |
+  +---> [User choice: add more test layers?]
+  |       YES: /generate_tests -> /clear -> /implement -> [loop]
+  |       NO:  continue to refactor
+  |
 Phase 5: /refactor @implementation/[file].md      <- PLAN MODE for assessment
   |
 Create PR
@@ -188,11 +193,14 @@ This workflow uses two distinct modes:
 **Output**: Test files + `ai-context/tests/[date]_[ticket]_[feature]_tests.md`
 
 **What happens:**
-1. AI reads the specification
-2. Creates comprehensive test suite covering all requirements
-3. Tests are designed to FAIL (code doesn't exist yet)
-4. Commits tests to repository
-5. Documents test plan
+1. AI reads the specification's `## Test Plan` section
+2. **Asks which test layer to generate** (happy path, error handling, edge cases, or all)
+3. Creates tests covering only the selected layer's scenarios
+4. Tests are designed to FAIL (code doesn't exist yet)
+5. Commits tests to repository
+6. Documents test plan with layer status tracking
+
+**Iterative approach:** This phase can be run multiple times, once per layer. After implementing one layer's tests, return here to generate the next layer. This keeps context small and output quality high.
 
 **Test locations:**
 - Discover from existing test patterns in the repository
@@ -226,11 +234,13 @@ This workflow uses two distinct modes:
 **Output**: Implementation + `ai-context/implementation/[date]_[ticket]_[feature]_implementation.md`
 
 **What happens:**
-1. AI follows research plan step-by-step
-2. Implements database migrations, queries, handlers, components
-3. Runs tests continuously (moving from RED to GREEN)
-4. Fixes failing tests iteratively
-5. Documents implementation and challenges
+1. AI establishes test baseline — previous-layer tests should be GREEN, current-layer tests should be RED
+2. AI follows research plan step-by-step
+3. Implements database migrations, queries, handlers, components
+4. Runs tests continuously (moving from RED to GREEN) with **regression awareness** — previously-passing tests must stay GREEN
+5. Fixes failing tests iteratively
+6. Documents implementation and challenges
+7. **Asks about next layer** — if more test layers remain, offers to loop back to `/generate_tests`
 
 **Implementation order:**
 Follow the order defined in the research document. Typical pattern:
@@ -646,6 +656,15 @@ A: Start with `/start_work` -> "Bug Fix" to investigate. If it reveals a larger 
 
 **Q: How do I know which phase I'm in?**
 A: Check `ai-context/current-work.md` - it tracks your current phase and progress.
+
+**Q: Do I need to use all 3 test layers?**
+A: No. You can stop after any layer. If happy path tests and implementation are sufficient for your feature, skip error handling and edge case layers entirely.
+
+**Q: Can I do all tests at once instead of iterating?**
+A: Yes. When `/generate_tests` asks which layer to generate, select "All layers at once." This preserves the original behavior of generating all tests in one pass.
+
+**Q: What order should I implement test layers?**
+A: The recommended order is: happy path first, then error handling, then edge cases. This mirrors traditional TDD, layering complexity incrementally.
 
 ---
 

@@ -16,9 +16,13 @@
 
 ## Status
 - [ ] Spec Phase
-- [ ] Test Phase
+- [ ] Test Phase - Happy Path
 - [ ] Research Phase
-- [ ] Implement Phase (next)
+- [ ] Implement Phase - Happy Path
+- [ ] Test Phase - Error Handling
+- [ ] Implement Phase - Error Handling
+- [ ] Test Phase - Edge Cases
+- [ ] Implement Phase - Edge Cases
 - [ ] Refactor Phase
 
 ## Notes
