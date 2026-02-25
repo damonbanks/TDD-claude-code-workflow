@@ -99,14 +99,14 @@ To override auto-detection, copy `ai-context/.workflow-config.yml.template` to `
 
 ## Supported Work Types
 
-- **New Feature** — Full 5-phase TDD cycle with plan mode gates
+- **New Feature** — Full 5-phase TDD cycle with approval gates
 - **Bug Fix** — Streamlined 4-phase workflow (analyze → reproduce → fix → verify)
 - **Resume Work** — Pick up where you left off using saved artifacts
 
 ## How It Works
 
-- **Plan Mode** is used for spec, bug analysis, research, and refactor assessment — exploration only, requires approval before proceeding
-- **Implementation Mode** is used for writing tests, code, and executing refactors
+- **Read-only exploration** is used for spec, bug analysis, research, and refactor assessment — exploration only, requires approval (via AskUserQuestion) before proceeding
+- **Implementation** is used for writing tests, code, and executing refactors
 - Artifacts are saved to `ai-context/` with a consistent naming convention: `YYYY-MM-DD_TICKET-ID_feature-name_type.md` (ticket portion is optional)
 - **Context isolation** between phases — run `/clear` before each new phase so the LLM approaches each role (spec author, test writer, researcher, implementer, refactorer) with fresh perspective. Phases communicate only through artifact files in `ai-context/`
 

@@ -3,26 +3,28 @@
 ## Objective
 Generate a comprehensive, testable specification document for a feature based on plain text user requirements. This spec will drive test generation and implementation in the Test-First AI Development Workflow.
 
-## Plan Mode
+## Read-Only Exploration Mode
 
-**IMPORTANT: This command operates in PLAN MODE.**
+**IMPORTANT: Do NOT use EnterPlanMode or ExitPlanMode in this command.**
 
-When this command is invoked:
-1. **Enter Plan Mode** immediately using the EnterPlanMode tool
-2. Explore the codebase to understand existing patterns
-3. Gather requirements through clarifying questions
-4. Draft the specification
-5. **Present for approval** using AskUserQuestion (NOT ExitPlanMode) to get user approval before proceeding
+Claude's system-level plan mode triggers a default "Clear context and implement plan?" exit interview that disrupts the 5-phase TDD workflow. This command needs read-only exploration with a custom approval flow, not the system plan mode.
 
-**Rationale for Plan Mode:**
-- Specification is about planning, not implementation
-- User should approve the spec before moving to tests
-- Prevents premature commitment to approach
-- Allows for course correction before investing in tests/code
+**How this command operates instead:**
+1. Explore the codebase using read-only tools (Read, Glob, Grep, Task/Explore)
+2. Gather requirements through clarifying questions
+3. Draft the specification
+4. **Present for approval** using AskUserQuestion to get user approval before proceeding
 
-**Why AskUserQuestion instead of ExitPlanMode:**
+**Allowed tools for exploration:**
+- **Read, Glob, Grep, Task/Explore** — for codebase research
+- **AskUserQuestion** — for gathering requirements and presenting approval
+- **Write** — only for saving the spec file itself to `ai-context/specs/`
+- **Bash** — only for git operations (branch check, commit)
+
+**Why not system plan mode:**
+- ExitPlanMode's default "Clear context and implement plan?" option breaks the orchestrator's ability to route to the next TDD phase
 - AskUserQuestion lets us present spec-specific approval options
-- ExitPlanMode's default options don't match the spec approval workflow
+- This command is inherently read-only by instruction — no system mode needed
 
 ## Project Context
 
@@ -37,7 +39,7 @@ This file contains the language, test framework, build/test/lint commands, git p
 **Full reference: `commands/_boundaries.md`**
 
 - **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; save spec to `ai-context/specs/`; follow discovered patterns
-- **ALWAYS**: Enter Plan Mode before exploring; commit spec after approval
+- **ALWAYS**: Explore in read-only mode before writing; commit spec after approval
 - **ASK**: User must approve specification before proceeding to test phase
 - **ASK**: If requirements are ambiguous, ask clarifying questions — don't assume
 - **ASK**: If a requirement seems infeasible, flag it for user decision
@@ -72,7 +74,7 @@ git branch --show-current
 ```
 📋 Note: You're currently on the main branch.
 
-This command only creates documentation (in plan mode), so it's safe.
+This command only creates documentation (in read-only exploration mode), so it's safe.
 However, subsequent phases (tests, implementation) will require a feature branch.
 
 Recommended: Create a feature branch before continuing to later phases:
@@ -86,18 +88,9 @@ Recommended: Create a feature branch before continuing to later phases:
 
 ---
 
-### Phase 0B: Enter Plan Mode
+### Phase 0B: Read-Only Exploration
 
-**FIRST ACTION: Use EnterPlanMode tool**
-
-This transitions into plan mode where you can:
-- Explore the codebase without modifying files
-- Read existing patterns and conventions
-- Gather requirements through questions
-- Draft specifications
-- Get user approval before proceeding
-
-## Two-Phase Process (Within Plan Mode)
+This command operates in read-only exploration mode by instruction (see "Read-Only Exploration Mode" above). Do **not** call EnterPlanMode — simply begin exploring the codebase and gathering requirements using the allowed tools.
 
 ### Phase 1: Gather Requirements
 
@@ -419,11 +412,11 @@ AI: [Generates specification in Phase 2]
 
 ## Presenting the Specification for Approval
 
-**CRITICAL: After creating the specification in plan mode, you must present it for user approval using AskUserQuestion (NOT ExitPlanMode).**
+**CRITICAL: After creating the specification, you must present it for user approval using AskUserQuestion (NOT ExitPlanMode).**
 
 ### Step 1: Write the Specification File
 
-While in plan mode, write your specification to the designated file:
+Write your specification to the designated file:
 - Use Write tool to create: `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
 - Filename format: `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
 - Example: `ai-context/specs/2025-01-15_PROJ-123_entity-management_spec.md`
