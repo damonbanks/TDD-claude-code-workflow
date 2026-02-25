@@ -16,5 +16,20 @@ else
   git -C "${REPO_DIR}" pull
 fi
 
+# Re-link command files (picks up any new files added since install)
+CLAUDE_DIR="${HOME}/.claude"
+if [ -L "${CLAUDE_DIR}/commands" ]; then
+  echo "  Replacing old directory symlink with per-file symlinks..."
+  rm "${CLAUDE_DIR}/commands"
+fi
+mkdir -p "${CLAUDE_DIR}/commands"
+
+echo "  Linking command files:"
+for file in "${REPO_DIR}/commands/"*; do
+  filename="$(basename "$file")"
+  ln -sf "$file" "${CLAUDE_DIR}/commands/${filename}"
+  echo "    ${filename} -> ${file}"
+done
+
 echo ""
-echo "Done."
+echo "Done. Command files are now symlinked."

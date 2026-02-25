@@ -28,7 +28,7 @@ Each phase produces artifacts that feed into the next, with context management b
 
 ### Global install (recommended)
 
-Clone the repo and run the install script to symlink commands into your `~/.claude` profile:
+Clone the repo and run the install script to symlink command files into your `~/.claude` profile:
 
 ```bash
 git clone https://github.com/damonbanks/TDD-claude-code-workflow.git ~/.claude/TDD-claude-code-workflow
