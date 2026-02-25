@@ -246,7 +246,7 @@ Based on the user's selection, guide them through the appropriate workflow:
 ✅ New Feature Workflow Selected
 
 This workflow follows 5 phases:
-  1. Spec - Define requirements (PLAN MODE)
+  1. Spec - Define requirements (requires approval)
   2. Test - Create failing tests (TDD RED)
   3. Research - Plan implementation
   4. Implement - Make tests pass (TDD GREEN)
@@ -282,7 +282,7 @@ I've created current-work.md to track your progress.
 **Purpose**: Fix an existing bug using streamlined TDD workflow with existing commands
 
 **Streamlined Workflow** - Reuses existing commands:
-1. **Bug Analysis** (PLAN MODE) → Creates lightweight spec in `bugs/`
+1. **Bug Analysis** (read-only exploration, requires approval) → Creates lightweight spec in `bugs/`
 2. **Test** → `/generate_tests` (just reproduction test)
 3. **Implement** → `/implement` (just the fix, skip research)
 4. **PR** → Skip refactor unless needed
@@ -305,13 +305,13 @@ Please provide:
 - Expected vs actual behavior
 ```
 
-### Step 1: Create Bug Analysis (Plan Mode)
+### Step 1: Create Bug Analysis (Read-Only Exploration)
 
-**Enter Plan Mode** and create lightweight bug analysis:
+**Do NOT use EnterPlanMode or ExitPlanMode** — the system plan mode exit interview breaks the workflow. Instead, explore using read-only tools (Read, Glob, Grep, Task/Explore) and present findings via AskUserQuestion.
 
 1. **Explore codebase** to understand the issue
 2. **Identify root cause** through investigation
-3. **Document analysis** in plan mode
+3. **Document analysis** using read-only exploration
 4. **Create bug analysis document**:
    - Location: `ai-context/bugs/[date]_[ticket]_[bug-name]_analysis.md`
    - Format: Lightweight spec focused on the bug
@@ -357,7 +357,7 @@ Please provide:
 - [File 2] - [Change needed]
 ```
 
-5. **Exit Plan Mode** to get user approval
+5. **Present analysis** to user for approval using AskUserQuestion
 
 ### Step 2: Phase Complete — Advance to Test Generation
 
@@ -382,7 +382,7 @@ Next command (after /clear):
 ### Bug Fix Workflow Summary
 
 **Streamlined 3-4 Phase Process:**
-1. ✅ **Analysis** (Plan Mode) → Lightweight spec in `bugs/`
+1. ✅ **Analysis** (read-only exploration) → Lightweight spec in `bugs/`
 2. ✅ **Test** → `/generate_tests` (reproduction test only)
 3. ✅ **Fix** → `/implement` (skip research, just fix)
 4. ✅ **PR** → Optional refactor, then create PR

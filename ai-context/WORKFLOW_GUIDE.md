@@ -36,7 +36,7 @@ Phases communicate **only through artifact files** in `ai-context/`.
 ```
 /start_work -> Select "New Feature"
   |
-Phase 1: /create_spec [description]              <- includes test plan interview
+Phase 1: /create_spec [description]              <- requires approval
   |  (run /clear)
 Phase 2: /generate_tests @specs/[file].md        <- select a layer
   |  (run /clear)
@@ -49,17 +49,17 @@ Phase 4: /implement @specs/[file].md
   |       YES: /generate_tests -> /clear -> /implement -> [loop]
   |       NO:  continue to refactor
   |
-Phase 5: /refactor @implementation/[file].md      <- PLAN MODE for assessment
+Phase 5: /refactor @implementation/[file].md      <- requires approval
   |
 Create PR
   |
 /finish_work                                       <- Cleanup after merge
 ```
 
-**Plan Mode Phases:**
+**Approval Gates:**
 - **Phase 1 (Spec)**: Explores codebase, gathers requirements, gets approval on specification
-- **Phase 3 (Research)**: Optionally uses plan mode to explore and plan implementation
-- **Phase 5 (Refactor)**: Uses plan mode to assess system holistically, create refactoring strategy, get approval before execution
+- **Phase 3 (Research)**: Explores codebase to plan implementation
+- **Phase 5 (Refactor)**: Assesses system holistically, creates refactoring strategy, gets approval before execution
 
 **Time investment:** Full TDD cycle, highest quality
 **Context management:** Run `/clear` between every phase
@@ -73,7 +73,7 @@ Create PR
 ```
 /start_work -> Select "Bug Fix"
   |
-1. Bug Analysis        <- PLAN MODE (understand, root cause, get approval)
+1. Bug Analysis        <- requires approval
   |  (run /clear)
 2. Create Reproduction Test (should fail)
   |  (run /clear)
@@ -84,7 +84,7 @@ Create PR
 Create PR
 ```
 
-**Plan Mode Phase:**
+**Approval Gate:**
 - **Phase 1 (Bug Analysis)**: Explores codebase to understand bug, identifies root cause, gets approval on approach before fixing
 
 **Time investment:** Streamlined, focused on the fix
@@ -111,41 +111,41 @@ Continue from current phase
 
 ---
 
-## Plan Mode vs Implementation Mode
+## Exploration vs Implementation
 
-This workflow uses two distinct modes:
+This workflow uses two distinct modes of operation. **Neither mode uses Claude's system-level EnterPlanMode/ExitPlanMode tools** — those trigger a default exit interview that disrupts the TDD workflow.
 
-### Plan Mode (Exploration & Planning)
+### Read-Only Exploration (with Approval Gates)
 **Used in:**
 - Phase 1: Spec (New Feature)
 - Phase 1: Bug Analysis (Bug Fix)
-- Phase 3: Research (New Feature) - *optional*
+- Phase 3: Research (New Feature)
 - Phase 5: Refactor - System Assessment (New Feature)
 
 **Characteristics:**
-- **No code changes** - exploration only
-- **User approval required** - must approve plan before proceeding
+- **No code changes** - exploration only (enforced by instruction, not system plan mode)
+- **User approval required** - must approve plan before proceeding (via AskUserQuestion)
 - **Safe to explore** - can read, search, analyze without risk
 - **Encourages thorough planning** - understand before acting
 
-**Why use Plan Mode:**
+**Why read-only exploration with AskUserQuestion:**
 - Specification and bug analysis are about understanding, not implementing
 - User should approve the approach before committing to tests/code
 - Prevents costly mistakes from premature implementation
-- Allows discussion and course correction early
+- AskUserQuestion provides phase-specific approval options (EnterPlanMode/ExitPlanMode does not)
 
-**Tools available in Plan Mode:**
-- Read, Grep, Glob - explore codebase
+**Tools allowed during exploration:**
+- Read, Grep, Glob, Task/Explore - explore codebase
 - WebFetch - research documentation
-- AskUserQuestion - clarify requirements
-- Write (for plan/spec files only) - document findings
-- AskUserQuestion - request approval to proceed
+- AskUserQuestion - clarify requirements, request approval to proceed
+- Write (for spec/plan files only) - document findings
+- Bash (git operations only) - branch checks, commits
 
-### Implementation Mode (Execution)
+### Implementation (Execution)
 **Used in:**
 - Phase 2: Test (New Feature)
 - Phase 4: Implement (New Feature)
-- Phase 5: Refactor - Execution (New Feature) - *after plan approval*
+- Phase 5: Refactor - Execution (New Feature) - *after approval*
 - Phases 2-4 (Bug Fix: Test, Fix, Verification)
 
 **Characteristics:**
@@ -158,32 +158,31 @@ This workflow uses two distinct modes:
 
 | Phase | Mode | Why |
 |-------|------|-----|
-| **Spec (New Feature)** | Plan Mode | Understand requirements and get approval before writing tests |
-| **Bug Analysis** | Plan Mode | Investigate root cause and get approval before changing code |
-| **Research (Optional)** | Plan Mode | Explore implementation patterns before coding |
+| **Spec (New Feature)** | Exploration + Approval | Understand requirements and get approval before writing tests |
+| **Bug Analysis** | Exploration + Approval | Investigate root cause and get approval before changing code |
+| **Research** | Exploration | Explore implementation patterns before coding |
 | **Test** | Implementation | Execute approved spec |
 | **Implement** | Implementation | Execute approved plan |
-| **Refactor** | Plan Mode then Implementation | Assess system holistically, then execute improvements |
+| **Refactor** | Exploration + Approval, then Implementation | Assess system holistically, then execute improvements |
 
 ---
 
 ## Workflow Phases (New Feature)
 
-### Phase 1: Spec (30-35% context) [PLAN MODE]
+### Phase 1: Spec (30-35% context) [requires approval]
 **Command**: `/create_spec [feature requirements]`
 **Purpose**: Generate comprehensive specification with acceptance criteria
 **Output**: `ai-context/specs/[date]_[ticket]_[feature]_spec.md`
-**Mode**: Plan Mode (requires user approval before proceeding)
+**Mode**: Read-only exploration with approval gate (via AskUserQuestion)
 
 **What happens:**
-1. **Enters Plan Mode** - Exploration without changes
-2. AI explores codebase to understand existing patterns
-3. AI uses plain text requirements as input
-4. AI asks clarifying questions about requirements
-5. Generates detailed specification with testable criteria
-6. Documents API contracts, data models, and dependencies
-7. Writes spec to ai-context directory
-8. **Exits Plan Mode** - Requests user approval
+1. AI explores codebase to understand existing patterns (read-only)
+2. AI uses plain text requirements as input
+3. AI asks clarifying questions about requirements
+4. Generates detailed specification with testable criteria
+5. Documents API contracts, data models, and dependencies
+6. Writes spec to ai-context directory
+7. Presents specification for user approval (via AskUserQuestion)
 
 ---
 
@@ -252,21 +251,20 @@ Follow the order defined in the research document. Typical pattern:
 
 ---
 
-### Phase 5: Refactor (35-40% context) [PLAN MODE for assessment]
+### Phase 5: Refactor (35-40% context) [requires approval]
 **Command**: `/refactor @ai-context/implementation/[feature].md`
 **Purpose**: Optimize, document, cleanup while keeping tests green
 **Output**: Improved code + `ai-context/refactoring/[date]_[ticket]_[feature]_refactoring.md`
-**Mode**: Plan Mode for system assessment, then Implementation Mode for execution
+**Mode**: Read-only exploration for system assessment, then implementation after approval
 
 **What happens:**
-1. **Enters Plan Mode** - System assessment phase
-2. AI analyzes implementation holistically across all files
-3. Identifies cross-cutting concerns and systemic improvements
-4. Creates coherent refactoring strategy with logical groupings
-5. **Exits Plan Mode** - Requests approval on strategy
-6. Executes refactorings in planned order (implementation mode)
-7. Runs tests after each logical group (tests stay GREEN)
-8. Documents refactoring decisions
+1. AI analyzes implementation holistically across all files (read-only)
+2. Identifies cross-cutting concerns and systemic improvements
+3. Creates coherent refactoring strategy with logical groupings
+4. Presents strategy for user approval (via AskUserQuestion)
+5. Executes refactorings in planned order after approval
+6. Runs tests after each logical group (tests stay GREEN)
+7. Documents refactoring decisions
 
 **Refactoring checklist:**
 - Code quality (duplication, naming, simplification)
@@ -369,11 +367,11 @@ AI: [Creates ai-context/current-work.md]
 # Step 2: Create specification
 > /create_spec Add user profile management with ability to view and edit profile
 
-AI: [Enters Plan Mode]
+AI: [Explores codebase in read-only mode]
     [Asks clarifying questions]
     [Generates specification]
     [Saves to ai-context/specs/2026-02-09_PROJ-5678_user-profile_spec.md]
-    [Exits Plan Mode - requests approval]
+    [Presents spec for approval via AskUserQuestion]
     [Updates current-work.md: Spec Phase complete]
 
 # Step 3: Clear context and generate tests

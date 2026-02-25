@@ -3,17 +3,24 @@
 ## Objective
 Optimize, document, and clean up the implementation while keeping tests green (Green → Refactor phase of TDD).
 
-## Plan Mode
+## Read-Only Exploration Mode
 
-**IMPORTANT: Phase 2 (System Assessment) uses PLAN MODE.**
+**IMPORTANT: Do NOT use EnterPlanMode or ExitPlanMode in this command.**
 
-The refactoring process uses plan mode for strategic planning:
-1. **Enter Plan Mode** for system assessment
-2. Analyze implementation holistically across all files
-3. Identify cross-cutting concerns and systemic improvements
-4. Create coherent refactoring strategy with logical groupings
-5. **Present for approval** using AskUserQuestion (NOT ExitPlanMode) to get user approval on strategy
-6. Execute refactorings in implementation mode
+Claude's system-level plan mode triggers a default "Clear context and implement plan?" exit interview that disrupts the TDD workflow. Phase 2 (System Assessment) needs read-only exploration with a custom approval flow, not the system plan mode.
+
+**How Phase 2 (System Assessment) operates:**
+1. Analyze implementation holistically across all files using read-only tools
+2. Identify cross-cutting concerns and systemic improvements
+3. Create coherent refactoring strategy with logical groupings
+4. **Present for approval** using AskUserQuestion to get user approval on strategy
+5. Execute refactorings after approval
+
+**Allowed tools for exploration:**
+- **Read, Glob, Grep, Task/Explore** — for codebase analysis
+- **AskUserQuestion** — for presenting strategy and getting approval
+- **Write** — only for saving the refactoring strategy document
+- **Bash** — only for running tests and git operations
 
 **Rationale:**
 - Refactoring should be strategic, not ad-hoc
@@ -21,9 +28,9 @@ The refactoring process uses plan mode for strategic planning:
 - Coherent plan makes changes easier to review
 - User approval before making changes
 
-**Why AskUserQuestion instead of ExitPlanMode:**
+**Why not system plan mode:**
+- ExitPlanMode's default "Clear context and implement plan?" option breaks the orchestrator's ability to continue the workflow
 - AskUserQuestion lets us present refactoring-specific approval options
-- ExitPlanMode's default options don't match the refactoring approval workflow
 
 ## Project Context
 
@@ -42,7 +49,7 @@ This file contains the test command, lint command, format command, commit conven
 **Full reference: `commands/_boundaries.md`**
 
 - **ALWAYS**: Read `project-context.md` for project context; read `current-work.md` for work state; run tests after each refactoring group
-- **ALWAYS**: Enter Plan Mode for system assessment; run linters and formatters after changes
+- **ALWAYS**: Explore in read-only mode for system assessment; run linters and formatters after changes
 - **ASK**: User must approve refactoring strategy before execution
 - **ASK**: If refactoring reveals spec deviations, flag for user decision
 - **ASK**: If refactoring would change API contracts or data models, get explicit approval
@@ -74,13 +81,13 @@ git branch --show-current
 ```
 ⚠️  WARNING: You're on the main branch.
 
-Plan mode (Phase 2 - System Assessment) is okay on main since it doesn't modify code.
+Phase 2 (System Assessment) is okay on main since it only reads code.
 However, Phase 4 (Execute Refactoring) requires a feature branch.
 
 Recommendation:
   git checkout -b refactor/[ticket-id]-[feature-name]
 
-Continue with plan mode? (y/n)
+Continue with system assessment? (y/n)
 ```
 
 **If on a feature branch:**
@@ -105,9 +112,9 @@ Please switch to a feature branch:
 2. Reference specification: `@ai-context/specs/[date]_[ticket]_[feature]_spec.md`
 3. Identify files that were created or modified
 
-### Phase 2: System Assessment (Plan Mode)
+### Phase 2: System Assessment (Read-Only Exploration)
 
-**IMPORTANT: Use Plan Mode for holistic refactoring assessment**
+**IMPORTANT: Analyze the implementation holistically before making any changes.**
 
 Before making any changes, analyze the implementation as a complete system:
 
@@ -202,9 +209,9 @@ Prioritize refactorings by:
 11. Add memoization/caching for expensive computations (if applicable)
 ```
 
-#### Step 5: Present Strategy for Approval (Using AskUserQuestion, NOT ExitPlanMode)
+#### Step 5: Present Strategy for Approval
 
-**Do NOT use ExitPlanMode** — it presents default options including "Clear context and implement plan" which breaks the orchestrator's ability to continue the workflow.
+**Do NOT use ExitPlanMode** — it presents default options including "Clear context and implement plan" which breaks the orchestrator's ability to continue the workflow. Use **AskUserQuestion** instead.
 
 Instead, present a summary of the refactoring strategy to the user, then use **AskUserQuestion** to get approval:
 
