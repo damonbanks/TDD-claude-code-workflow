@@ -28,25 +28,38 @@ Each phase produces artifacts that feed into the next, with context management b
 
 ### Global install (recommended)
 
-Clone the repo and run the install script to symlink command files into your `~/.claude` profile:
+Clone the repo and run the install script to symlink command files into your profile:
 
 ```bash
 git clone https://github.com/damonbanks/TDD-claude-code-workflow.git ~/.claude/TDD-claude-code-workflow
-~/.claude/TDD-claude-code-workflow/install.sh
+~/.claude/TDD-claude-code-workflow/install.sh --target claude
+```
+
+To install for Codex (prompts):
+
+```bash
+~/.claude/TDD-claude-code-workflow/install.sh --target codex
 ```
 
 To pin a specific release:
 
 ```bash
-~/.claude/TDD-claude-code-workflow/install.sh v1.0.2
+~/.claude/TDD-claude-code-workflow/install.sh --target claude v1.0.2
+~/.claude/TDD-claude-code-workflow/install.sh --target codex v1.0.2
 ```
 
 To update later:
 
 ```bash
-~/.claude/TDD-claude-code-workflow/update.sh          # latest main
-~/.claude/TDD-claude-code-workflow/update.sh v1.0.2   # specific release
+~/.claude/TDD-claude-code-workflow/update.sh --target claude          # latest main
+~/.claude/TDD-claude-code-workflow/update.sh --target claude v1.0.2   # specific release
+~/.claude/TDD-claude-code-workflow/update.sh --target codex           # latest main
+~/.claude/TDD-claude-code-workflow/update.sh --target codex v1.0.2    # specific release
 ```
+
+Notes:
+- Codex installs prompts into `~/.codex/prompts/`.
+- `--target` defaults to `claude` if omitted.
 
 ### Per-project install
 
