@@ -12,8 +12,8 @@ Usage: $0 [--target claude|codex] [tag]
 Examples:
   $0                         # update for Claude (latest main)
   $0 v1.0.2                  # update for Claude at tag v1.0.2
-  $0 --target codex          # update for Codex (latest main)
-  $0 --target codex v1.0.2   # update for Codex at tag v1.0.2
+  $0 --target codex          # update Codex skill (latest main)
+  $0 --target codex v1.0.2   # update Codex skill at tag v1.0.2
 EOF
 }
 
@@ -48,9 +48,14 @@ done
 case "${TARGET}" in
   claude)
     TARGET_DIR="${HOME}/.claude/commands"
+    INSTALL_MODE="claude_commands"
     ;;
   codex)
-    TARGET_DIR="${HOME}/.codex/prompts"
+    TARGET_DIR="${HOME}/.codex/skills"
+    INSTALL_MODE="codex_skill"
+    SKILL_NAME="tdd-workflow"
+    SKILL_SOURCE_DIR="${REPO_DIR}/skills/${SKILL_NAME}"
+    SKILL_TARGET_DIR="${TARGET_DIR}/${SKILL_NAME}"
     ;;
   *)
     echo "Error: unknown target '${TARGET}' (use claude or codex)"
@@ -72,19 +77,43 @@ else
   git -C "${REPO_DIR}" pull
 fi
 
-# Re-link command files (picks up any new files added since install)
-if [ -L "${TARGET_DIR}" ]; then
-  echo "  Replacing old directory symlink with per-file symlinks..."
-  rm "${TARGET_DIR}"
-fi
-mkdir -p "${TARGET_DIR}"
+if [ "${INSTALL_MODE}" = "claude_commands" ]; then
+  # Re-link command files (picks up any new files added since install)
+  if [ -L "${TARGET_DIR}" ]; then
+    echo "  Replacing old directory symlink with per-file symlinks..."
+    rm "${TARGET_DIR}"
+  fi
+  mkdir -p "${TARGET_DIR}"
 
-echo "  Linking command files:"
-for file in "${REPO_DIR}/commands/"*; do
-  filename="$(basename "$file")"
-  ln -sf "$file" "${TARGET_DIR}/${filename}"
-  echo "    ${filename} -> ${file}"
-done
+  echo "  Linking command files:"
+  for file in "${REPO_DIR}/commands/"*; do
+    filename="$(basename "$file")"
+    ln -sf "$file" "${TARGET_DIR}/${filename}"
+    echo "    ${filename} -> ${file}"
+  done
+else
+  if [ ! -d "${SKILL_SOURCE_DIR}" ]; then
+    echo "Error: Codex skill source directory not found: ${SKILL_SOURCE_DIR}"
+    exit 1
+  fi
+
+  mkdir -p "${TARGET_DIR}"
+  if [ -L "${SKILL_TARGET_DIR}" ] || [ -f "${SKILL_TARGET_DIR}" ]; then
+    rm -f "${SKILL_TARGET_DIR}"
+  elif [ -d "${SKILL_TARGET_DIR}" ]; then
+    echo "Error: ${SKILL_TARGET_DIR} already exists as a directory."
+    echo "Move/remove it and re-run, or keep your existing install."
+    exit 1
+  fi
+
+  ln -s "${SKILL_SOURCE_DIR}" "${SKILL_TARGET_DIR}"
+  echo "  Linked Codex skill:"
+  echo "    ${SKILL_TARGET_DIR} -> ${SKILL_SOURCE_DIR}"
+fi
 
 echo ""
-echo "Done. Command files are now symlinked."
+if [ "${INSTALL_MODE}" = "claude_commands" ]; then
+  echo "Done. Command files are now symlinked."
+else
+  echo "Done. Codex skill is now symlinked."
+fi

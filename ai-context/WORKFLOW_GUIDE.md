@@ -477,14 +477,23 @@ ai-context/
     └── finish_work.md
 
 .codex/
-└── prompts/
-    ├── start_work.md
-    ├── create_spec.md
-    ├── generate_tests.md
-    ├── research_implementation.md
-    ├── implement.md
-    ├── refactor.md
-    └── finish_work.md
+└── skills/
+    └── tdd-workflow/
+        ├── SKILL.md
+        ├── references/
+        │   └── phases/
+        │       ├── start_work.md
+        │       ├── create_spec.md
+        │       ├── generate_tests.md
+        │       ├── research_implementation.md
+        │       ├── implement.md
+        │       ├── refactor.md
+        │       └── finish_work.md
+        └── scripts/
+            ├── check_branch.sh
+            ├── make_artifact_name.sh
+            ├── update_current_work.sh
+            └── refresh_project_context.sh
 ```
 
 **File Naming Convention:**
@@ -686,7 +695,7 @@ If you find phases using too much context:
 
 ### Adding Custom Phases
 To add custom phases:
-1. Create command file in `.claude/commands/[phase].md` or `.codex/prompts/[phase].md`
+1. Create command file in `.claude/commands/[phase].md` and/or add phase reference docs under `.codex/skills/tdd-workflow/references/phases/[phase].md`
 2. Follow existing command structure
 3. Document context budget and outputs
 
@@ -701,7 +710,7 @@ This workflow auto-detects your project's language, test framework, git platform
 
 - **In Claude Code:** Type `/help`
 - **Workflow questions:** Read this file
-- **Command details:** Check `.claude/commands/[command].md` or `.codex/prompts/[command].md`
+- **Command details:** Check `.claude/commands/[command].md` or `.codex/skills/tdd-workflow/references/phases/[command].md`
 - **Report issues:** https://github.com/anthropics/claude-code/issues
 
 ---
@@ -710,7 +719,7 @@ This workflow auto-detects your project's language, test framework, git platform
 
 Ready to use the workflow? Verify:
 
-- Commands exist in `.claude/commands/` or `.codex/prompts/`:
+- Commands or skill references exist in `.claude/commands/` or `.codex/skills/tdd-workflow/references/phases/`:
   - `start_work.md`
   - `create_spec.md`
   - `generate_tests.md`

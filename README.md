@@ -1,10 +1,12 @@
 # TDD Claude Code Workflow
 
-A set of Claude Code custom slash commands that enforce a disciplined Test-Driven Development workflow for AI-assisted development.
+A structured Test-Driven Development workflow for AI-assisted development:
+- Claude Code via slash commands
+- Codex via a dedicated `tdd-workflow` skill
 
 ## What This Is
 
-This repo provides reusable Claude Code commands and an `ai-context/` directory structure that guide you through a strict TDD cycle:
+This repo provides reusable workflow assets and an `ai-context/` directory structure that guide you through a strict TDD cycle:
 
 **Spec → Test → Research → Implement → Refactor**
 
@@ -12,7 +14,7 @@ Each phase produces artifacts that feed into the next, with context management b
 
 **Design principle:** Each phase runs in a fresh context (`/clear` between phases). Phases communicate only through artifact files on disk — this prevents the LLM's reasoning from bleeding across phase boundaries, preserving TDD's role separation.
 
-## Commands
+## Claude Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -28,14 +30,14 @@ Each phase produces artifacts that feed into the next, with context management b
 
 ### Global install (recommended)
 
-Clone the repo and run the install script to symlink command files into your profile:
+Clone the repo and run the install script:
 
 ```bash
 git clone https://github.com/damonbanks/TDD-claude-code-workflow.git ~/.claude/TDD-claude-code-workflow
 ~/.claude/TDD-claude-code-workflow/install.sh --target claude
 ```
 
-To install for Codex (prompts):
+To install the Codex skill:
 
 ```bash
 ~/.claude/TDD-claude-code-workflow/install.sh --target codex
@@ -53,13 +55,57 @@ To update later:
 ```bash
 ~/.claude/TDD-claude-code-workflow/update.sh --target claude          # latest main
 ~/.claude/TDD-claude-code-workflow/update.sh --target claude v1.0.2   # specific release
-~/.claude/TDD-claude-code-workflow/update.sh --target codex           # latest main
-~/.claude/TDD-claude-code-workflow/update.sh --target codex v1.0.2    # specific release
+~/.claude/TDD-claude-code-workflow/update.sh --target codex           # latest main skill
+~/.claude/TDD-claude-code-workflow/update.sh --target codex v1.0.2    # specific skill release
 ```
 
 Notes:
-- Codex installs prompts into `~/.codex/prompts/`.
+- Claude installs command files into `~/.claude/commands/`.
+- Codex installs skill `tdd-workflow` into `~/.codex/skills/tdd-workflow`.
 - `--target` defaults to `claude` if omitted.
+
+## Quick Start
+
+### Claude Code (Slash Commands)
+
+1. Install Claude commands:
+   ```bash
+   ~/.claude/TDD-claude-code-workflow/install.sh --target claude
+   ```
+2. In your project, ensure `ai-context/` exists.
+3. Start with:
+   ```text
+   /start_work
+   ```
+4. Follow phases:
+   ```text
+   /create_spec -> /generate_tests -> /research_implementation -> /implement -> /refactor -> /finish_work
+   ```
+
+### Codex (Skill)
+
+1. Install Codex skill:
+   ```bash
+   ~/.claude/TDD-claude-code-workflow/install.sh --target codex
+   ```
+2. Restart Codex so the skill is loaded.
+3. Start with a prompt such as:
+   ```text
+   Use tdd-workflow to start work on PROJ-123 add user authentication.
+   ```
+4. Continue by prompting the same phase progression (spec -> tests -> research -> implement -> refactor -> finish).
+
+## Codex Prompt Examples
+
+After installation, invoke the skill directly in Codex prompts. Example requests:
+
+```text
+Use tdd-workflow to start work on PROJ-123 add user authentication.
+Use tdd-workflow to create a spec for password reset.
+Use tdd-workflow to generate failing happy-path tests from ai-context/specs/2026-02-26_PROJ-123_password-reset_spec.md.
+```
+
+The skill definition is in `skills/tdd-workflow/` and reuses the same phase contracts as the Claude command set.
 
 ### Per-project install
 
@@ -68,13 +114,11 @@ Copy files directly into your project:
 ```bash
 # From your project root
 cp -r /path/to/TDD-claude-code-workflow/commands/ .claude/commands/
+cp -r /path/to/TDD-claude-code-workflow/skills/tdd-workflow/ .codex/skills/tdd-workflow/
 cp -r /path/to/TDD-claude-code-workflow/ai-context/ ai-context/
 ```
 
-### Then
-
-1. Copy the `ai-context/` directory to the root of your project
-2. Start every session with `/start_work`
+Use Claude commands when working in Claude Code, or the `tdd-workflow` skill prompts when working in Codex.
 
 ## Compatibility
 
@@ -128,3 +172,4 @@ See [`ai-context/WORKFLOW_GUIDE.md`](ai-context/WORKFLOW_GUIDE.md) for the full 
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
+- Codex CLI (for `--target codex` skill install)

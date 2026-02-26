@@ -1,0 +1,3 @@
+interface:
+  display_name: "TDD Workflow"
+  short_description: "Run structured artifact-first TDD phases"
